@@ -33,10 +33,10 @@ A comprehensive import/export management system that handles the complete lifecy
 │  │   Service  │ │   Service  │ │   Service  │ │   Data     │        │
 │  │            │ │            │ │            │ │   Service  │        │
 │  └────────────┘ └────────────┘ └────────────┘ └────────────┘        │
-│  ┌──────────────────────────────────────────────────────────────┐   │
-│  │                    AI Service (Ollama)                       │   │
-│  │   Chat · OCR extraction · ETA prediction · Reports · Assist  │   │
-│  └──────────────────────────────────────────────────────────────┘   │
+│  ┌────────────────────────────┐ ┌────────────────────────────┐      │
+│  │     Warehouse Service      │ │     AI Service (Ollama)    │      │
+│  │   Warehouses · Inventory   │ │   Chat · OCR · ETA · Assist│      │
+│  └────────────────────────────┘ └────────────────────────────┘      │
 ├──────────────────────────────────────────────────────────────────────┤
 │                        PostgreSQL Database                           │
 │                    (Each service has its own schema)                 │
@@ -56,10 +56,11 @@ A comprehensive import/export management system that handles the complete lifecy
 |---------|------|----------------|
 | API Gateway | 8000 | Routing, proxy, CORS |
 | Auth Service | 8001 | User authentication, roles, permissions, user management |
-| Import Service | 8002 | Import job workflow, export job workflow, invoices, templates, documents, activity logs |
+| Import Service | 8002 | Import job workflow, export job workflow, invoices, templates, documents, activity logs, finance (quotations, vendor bills, payments, profitability), container tracking, air freight (AWB), export commercial invoices & packing lists |
 | Fleet Service | 8003 | Trucks, trailers, drivers management |
 | Master Data Service | 8004 | Customers, vendors, locations, items, company settings |
 | AI Service | 8005 | AI chat, document OCR extraction, delay/ETA prediction, weekly reports, smart job assist |
+| Warehouse Service | 8006 | Warehouses, inventory items, stock movements (IN/OUT) with low-stock/out-of-stock tracking |
 
 ---
 
@@ -194,8 +195,10 @@ Selling tiers (Starter / Business / Enterprise) control which modules and featur
 | Plan | Included features | Max users |
 |------|-------------------|-----------|
 | `starter` | import, export, fleet, master-data | 5 |
-| `business` | + invoicing, documents, templates, ai | 25 |
+| `business` | + invoicing, documents, templates, ai, finance, containers, air, warehouse | 25 |
 | `enterprise` | everything | unlimited |
+
+> **Note**: The advanced modules (finance & profitability, container tracking, air freight/AWB, warehouse & inventory, and structured export documentation) are **Business and Enterprise only**. They are gated server-side by the gateway (`ROUTE_FEATURES` → `finance`, `containers`, `air`, `warehouse`) and mirrored in the frontend `PLAN_FEATURES`.
 
 **Enforcement points**
 
@@ -209,6 +212,70 @@ Selling tiers (Starter / Business / Enterprise) control which modules and featur
 4. **Frontend** — plan-aware: hides sidebar links (Templates, AI Reports, Invoices) and the AI chat widget when the plan lacks the feature, renders a locked/upgrade panel in `AIAssistPanel`, and gates routes via `PlanGate`. The upgrade prompt links to `sales@cargoflow.app`.
 
 **Plan switching** — admins change a user's plan from User Management (PUT `/api/auth/users/{id}`). The new plan takes effect on that user's next login or token refresh.
+
+### 3.6 Finance & Profitability (NEW)
+
+All finance endpoints live in the **Import Service** (`routers/finance.py`). Gated to Business + Enterprise.
+
+#### 3.6.1 Quotations
+- Create quotations with line items (description, qty, unit price, COA); auto-computed subtotal, tax and total
+- Optional link to an import/export job; `job_type` distinguishes `import` / `export`
+- Statuses: `DRAFT`, `SENT`, `ACCEPTED`, `CONVERTED`, `REJECTED`
+- **Convert to invoice** (manager+): creates an `Invoice` from the quotation lines and marks the quotation `CONVERTED`
+
+#### 3.6.2 Vendor Bills
+- Capture vendor expenses (job-linked) with line items; auto-computed totals
+- Statuses: `UNPAID`, `PARTIAL`, `PAID`
+- Linked to `vendors` in the master-data service by optional `vendor_id` + denormalized `vendor_name`
+
+#### 3.6.3 Job Costs
+- Record costs against any import or export job (`/api/jobs/{id}/costs`, `/api/exports/{id}/costs`)
+- Cost types: `storage`, `transport`, `customs`, `handling`, `other`; optional vendor/bill reference
+
+#### 3.6.4 Payments
+- Record payments against invoices (amount, date, method, reference)
+- Automatically rolls invoice status to `PARTIAL` / `PAID` as payments accumulate; deleting a payment recalculates the status
+
+#### 3.6.5 Profitability
+- Per-job profitability: revenue (invoices) − costs (job costs), plus profit margin %
+- Finance analytics (30-day window): revenue, expenses, profit, outstanding invoices, unpaid bills, invoices issued, bills received, and top-10 customers by revenue with profit breakdown
+
+### 3.7 Container Tracking (NEW)
+
+Container registry and lifecycle tracking. Lives in the **Import Service** (`routers/containers.py`). Gated to Business + Enterprise.
+
+- Container master: number (unique), size, type (`DRY`/`REEFER`/`OPEN_TOP` etc.), status (`EMPTY`, `LOADED`, `IN_TRANSIT`, `ARRIVED`, `RETURNED`, `OUT_OF_SERVICE`), current location
+- Auto event logging: container registration and status changes produce `ContainerEvent` records
+- Manual events with optional job link (`job_id` + `job_type`) and free-text description; event history viewable per container
+- Quick filter for in-transit containers (`GET /api/containers/in-transit`)
+- `import_jobs.container_id` / `export_jobs.container_id` link jobs to the container registry
+
+### 3.8 Air Freight / AWB (NEW)
+
+Air job workflow mirroring the export pattern. Lives in the **Import Service** (`routers/air.py`). Gated to Business + Enterprise.
+
+- Air job master: job number (auto `AIR-…`), AWB/HAWB number, carrier, flight number, origin/destination, ETD/ETA/ATD/ATA, shipper/consignee, cargo description, weight, pieces
+- Status flow: `PENDING_APPROVAL → APPROVED → TEAM_ASSIGNED → (LICENSE_APPROVED) → PERMIT_SUBMITTED → FLIGHT_DEPARTED → FLIGHT_ARRIVED → CLOSED`, with `REJECTED` branch
+- Actions: approve/reject (manager+), assign team, apply license, submit customs permit, record departure (ATD), record arrival (ATA), close
+- Activity log per job; document upload/list/delete (base64 → disk)
+
+### 3.9 Warehouse & Inventory (NEW)
+
+Dedicated **Warehouse Service** (`warehouse-service`, port 8006, DB `erp_warehouse`). Gated to Business + Enterprise.
+
+- Warehouse master: name, unique code, location, manager, status (`ACTIVE`/`INACTIVE`)
+- Inventory items: SKU, name, description, category, quantity, unit, min-stock threshold
+- Automatic stock status: `IN_STOCK` → `LOW_STOCK` (qty ≤ min) → `OUT_OF_STOCK` (qty = 0), recomputed on every change
+- Stock movements: `IN` / `OUT` (incl. `ISSUE`, `SOLD`) with reference type/id and notes; `OUT` movements reject insufficient stock (400)
+- Inventory summary: total items, total quantity, low-stock count, out-of-stock count, warehouse count
+
+### 3.10 Structured Export Documentation (NEW)
+
+Commercial invoices and packing lists for export jobs. Lives in the **Import Service** (`routers/export_docs.py`). Gated to Business + Enterprise.
+
+- **Commercial invoice** per export job (one per job): invoice no (auto `CI-…`), date, payment terms, shipper/consignee (defaults from the export job), line items with description/qty/unit price/HS code; auto subtotal/total
+- **Packing list** per export job: PL no (auto `PL-…`), date, shipper/consignee, line items with quantity/units/gross & net weight/dimensions/marks
+- Both scoped under `/api/exports/{job_id}/…` and enforce that the export job exists
 
 ---
 
@@ -356,6 +423,107 @@ Selling tiers (Starter / Business / Enterprise) control which modules and featur
 | POST | /api/ai/assist/job | Smart suggestions + AI tip for a job |
 
 > **Auth note**: All endpoints require a Bearer JWT. The AI Service validates the token itself and relays it to the gateway when fetching ERP context, preserving per-service RBAC.
+
+### 4.8 Import Service — Finance (NEW)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /api/quotations | Create quotation |
+| GET | /api/quotations | List quotations (status filter) |
+| GET | /api/quotations/{id} | Get quotation |
+| PUT | /api/quotations/{id} | Update quotation |
+| POST | /api/quotations/{id}/lines | Add quotation line |
+| POST | /api/quotations/{id}/convert | Convert quotation to invoice (manager+) |
+| DELETE | /api/quotations/{id}/lines/{line_id} | Remove quotation line |
+| DELETE | /api/quotations/{id} | Delete quotation (manager+) |
+| POST | /api/bills | Create vendor bill |
+| GET | /api/bills | List vendor bills (status filter) |
+| GET | /api/bills/{id} | Get vendor bill |
+| PUT | /api/bills/{id} | Update vendor bill |
+| POST | /api/bills/{id}/lines | Add bill line |
+| DELETE | /api/bills/{id}/lines/{line_id} | Remove bill line |
+| DELETE | /api/bills/{id} | Delete vendor bill (manager+) |
+| GET | /api/jobs/{job_id}/costs | List import job costs |
+| POST | /api/jobs/{job_id}/costs | Add import job cost |
+| PUT | /api/jobs/{job_id}/costs/{cost_id} | Update job cost |
+| DELETE | /api/jobs/{job_id}/costs/{cost_id} | Delete job cost (manager+) |
+| GET | /api/exports/{job_id}/costs | List export job costs |
+| POST | /api/exports/{job_id}/costs | Add export job cost |
+| GET | /api/invoices/{invoice_id}/payments | List invoice payments |
+| POST | /api/payments | Create payment (auto-updates invoice status) |
+| DELETE | /api/payments/{id} | Delete payment (manager+, recalculates status) |
+| GET | /api/finance/profit/{job_id} | Job profitability (revenue, costs, profit, margin) |
+| GET | /api/finance/analytics | Finance analytics (30-day KPIs + top customers) |
+
+### 4.9 Import Service — Containers (NEW)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /api/containers | Create container (auto `CREATED` event) |
+| GET | /api/containers | List containers (status/search filter) |
+| GET | /api/containers/in-transit | List containers in transit |
+| GET | /api/containers/{id} | Get container |
+| PUT | /api/containers/{id} | Update container (auto event on status change) |
+| POST | /api/containers/{id}/events | Add container event |
+| GET | /api/containers/{id}/events | List container events |
+| DELETE | /api/containers/{id} | Delete container (manager+) |
+
+### 4.10 Import Service — Air Jobs (NEW)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /api/air | Create air job |
+| GET | /api/air | List air jobs (status/search filter) |
+| GET | /api/air/activities | Air activity log (optional job_id) |
+| GET | /api/air/{id} | Get air job |
+| PUT | /api/air/{id} | Update air job |
+| PUT | /api/air/{id}/approve | Approve air job (manager+) |
+| PUT | /api/air/{id}/reject | Reject air job (manager+) |
+| PUT | /api/air/{id}/assign-team | Assign team (manager+) |
+| PUT | /api/air/{id}/apply-license | Apply air export license |
+| PUT | /api/air/{id}/customs-permit | Submit air customs permit |
+| PUT | /api/air/{id}/departure | Record flight departure (ATD) |
+| PUT | /api/air/{id}/arrival | Record flight arrival (ATA) |
+| PUT | /api/air/{id}/close | Close air job (manager+) |
+| DELETE | /api/air/{id} | Delete air job (admin) |
+| GET | /api/air/{job_id}/documents | List air documents |
+| POST | /api/air/{job_id}/documents | Upload air document (base64) |
+| DELETE | /api/air-documents/{id} | Delete air document (manager+) |
+
+### 4.11 Import Service — Export Structured Docs (NEW)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /api/exports/{job_id}/commercial-invoice | Create commercial invoice |
+| GET | /api/exports/{job_id}/commercial-invoice | Get commercial invoice |
+| PUT | /api/exports/{job_id}/commercial-invoice | Update commercial invoice |
+| POST | /api/exports/{job_id}/commercial-invoice/lines | Add commercial invoice line |
+| DELETE | /api/exports/{job_id}/commercial-invoice/lines/{line_id} | Remove line (manager+) |
+| DELETE | /api/exports/{job_id}/commercial-invoice | Delete commercial invoice (manager+) |
+| POST | /api/exports/{job_id}/packing-list | Create packing list |
+| GET | /api/exports/{job_id}/packing-list | Get packing list |
+| PUT | /api/exports/{job_id}/packing-list | Update packing list |
+| POST | /api/exports/{job_id}/packing-list/lines | Add packing list line |
+| DELETE | /api/exports/{job_id}/packing-list/lines/{line_id} | Remove line (manager+) |
+| DELETE | /api/exports/{job_id}/packing-list | Delete packing list (manager+) |
+
+### 4.12 Warehouse Service (NEW)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /api/warehouses | Create warehouse (manager+) |
+| GET | /api/warehouses | List warehouses (search) |
+| GET | /api/warehouses/{id} | Get warehouse |
+| PUT | /api/warehouses/{id} | Update warehouse (manager+) |
+| DELETE | /api/warehouses/{id} | Delete warehouse (manager+) |
+| POST | /api/inventory | Create inventory item (manager+) |
+| GET | /api/inventory | List inventory (warehouse/status/search filter) |
+| GET | /api/inventory/{id} | Get inventory item |
+| PUT | /api/inventory/{id} | Update inventory item (manager+) |
+| DELETE | /api/inventory/{id} | Delete inventory item (manager+) |
+| POST | /api/inventory/{item_id}/movements | Record stock movement (IN/OUT; insufficient stock guard) |
+| GET | /api/inventory/{item_id}/movements | List item movements |
+| GET | /api/inventory/summary | Inventory summary (totals, low/out-of-stock counts) |
 
 ---
 
@@ -653,6 +821,262 @@ The AI Service has **no database** — it reads live data by relaying the caller
 | `OLLAMA_TEXT_MODEL` | Chat, reports, tips | `qwen2.5:1.5b` |
 | `OLLAMA_VISION_MODEL` | Document OCR extraction | `llava:7b` |
 
+### 5.6 Import Service — Advanced Modules Schema (Finance, Containers, Air, Export Docs)
+
+> The `import_jobs` and `export_jobs` tables additionally gain a nullable `container_id UUID` column linking jobs to the `containers` registry.
+
+```sql
+CREATE TABLE quotations (
+    id UUID PRIMARY KEY,
+    quote_number VARCHAR(50) UNIQUE NOT NULL,
+    job_id UUID,
+    job_type VARCHAR(20) DEFAULT 'import',
+    customer_name VARCHAR(255),
+    issue_date TIMESTAMP,
+    valid_until TIMESTAMP,
+    status VARCHAR(50) DEFAULT 'DRAFT',
+    subtotal DECIMAL(12,2) DEFAULT 0,
+    tax_rate DECIMAL(5,2) DEFAULT 0,
+    tax DECIMAL(12,2) DEFAULT 0,
+    total DECIMAL(12,2) DEFAULT 0,
+    notes TEXT,
+    created_by VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE quotation_lines (
+    id UUID PRIMARY KEY,
+    quotation_id UUID NOT NULL REFERENCES quotations(id),
+    description VARCHAR(255) NOT NULL,
+    quantity DECIMAL(12,2) DEFAULT 1,
+    unit_price DECIMAL(12,2) DEFAULT 0,
+    amount DECIMAL(12,2) DEFAULT 0,
+    coa VARCHAR(50)
+);
+
+CREATE TABLE vendor_bills (
+    id UUID PRIMARY KEY,
+    bill_number VARCHAR(50) UNIQUE NOT NULL,
+    job_id UUID,
+    job_type VARCHAR(20) DEFAULT 'import',
+    vendor_id UUID,
+    vendor_name VARCHAR(255),
+    bill_date TIMESTAMP,
+    due_date TIMESTAMP,
+    status VARCHAR(50) DEFAULT 'UNPAID',
+    subtotal DECIMAL(12,2) DEFAULT 0,
+    tax_rate DECIMAL(5,2) DEFAULT 0,
+    tax DECIMAL(12,2) DEFAULT 0,
+    total DECIMAL(12,2) DEFAULT 0,
+    notes TEXT,
+    created_by VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE bill_lines (
+    id UUID PRIMARY KEY,
+    bill_id UUID NOT NULL REFERENCES vendor_bills(id),
+    description VARCHAR(255) NOT NULL,
+    quantity DECIMAL(12,2) DEFAULT 1,
+    unit_price DECIMAL(12,2) DEFAULT 0,
+    amount DECIMAL(12,2) DEFAULT 0,
+    coa VARCHAR(50)
+);
+
+CREATE TABLE job_costs (
+    id UUID PRIMARY KEY,
+    job_id UUID NOT NULL,
+    job_type VARCHAR(20) DEFAULT 'import',
+    cost_type VARCHAR(50) DEFAULT 'other',
+    description VARCHAR(255),
+    amount DECIMAL(12,2) DEFAULT 0,
+    vendor_id UUID,
+    bill_id UUID,
+    created_by VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE payments (
+    id UUID PRIMARY KEY,
+    invoice_id UUID NOT NULL,
+    amount DECIMAL(12,2) DEFAULT 0,
+    payment_date TIMESTAMP,
+    method VARCHAR(50),
+    reference VARCHAR(100),
+    created_by VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE containers (
+    id UUID PRIMARY KEY,
+    container_number VARCHAR(50) UNIQUE NOT NULL,
+    size VARCHAR(10),
+    type VARCHAR(20) DEFAULT 'DRY',
+    status VARCHAR(50) DEFAULT 'EMPTY',
+    current_location_id UUID,
+    last_event_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE container_events (
+    id UUID PRIMARY KEY,
+    container_id UUID NOT NULL REFERENCES containers(id),
+    event_type VARCHAR(50) NOT NULL,
+    event_date TIMESTAMP,
+    job_id UUID,
+    job_type VARCHAR(20),
+    description VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE air_jobs (
+    id UUID PRIMARY KEY,
+    job_number VARCHAR(50) UNIQUE NOT NULL,
+    awb_number VARCHAR(100),
+    hawb_number VARCHAR(100),
+    carrier VARCHAR(255),
+    flight_number VARCHAR(50),
+    origin VARCHAR(255),
+    destination VARCHAR(255),
+    etd TIMESTAMP,
+    atd TIMESTAMP,
+    eta TIMESTAMP,
+    ata TIMESTAMP,
+    shipper VARCHAR(255),
+    consignee VARCHAR(255),
+    cargo_description TEXT,
+    total_weight_kg DECIMAL(12,2),
+    pieces INTEGER,
+    status VARCHAR(50) DEFAULT 'PENDING_APPROVAL',
+    license_required BOOLEAN DEFAULT FALSE,
+    license_approved BOOLEAN DEFAULT FALSE,
+    customs_permit_status VARCHAR(50),
+    created_by UUID,
+    assigned_team TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE air_activity_logs (
+    id UUID PRIMARY KEY,
+    job_id UUID NOT NULL REFERENCES air_jobs(id),
+    action VARCHAR(100) NOT NULL,
+    description TEXT,
+    old_value TEXT,
+    new_value TEXT,
+    performed_by VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE air_documents (
+    id UUID PRIMARY KEY,
+    job_id UUID NOT NULL REFERENCES air_jobs(id),
+    filename VARCHAR(255) NOT NULL,
+    file_type VARCHAR(100),
+    file_size INTEGER,
+    file_path VARCHAR(500),
+    description VARCHAR(255),
+    uploaded_by VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE export_commercial_invoices (
+    id UUID PRIMARY KEY,
+    export_job_id UUID NOT NULL REFERENCES export_jobs(id),
+    invoice_no VARCHAR(50) NOT NULL,
+    date TIMESTAMP,
+    terms VARCHAR(255),
+    shipper VARCHAR(255),
+    consignee VARCHAR(255),
+    subtotal DECIMAL(12,2) DEFAULT 0,
+    tax DECIMAL(12,2) DEFAULT 0,
+    total DECIMAL(12,2) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE export_commercial_invoice_lines (
+    id UUID PRIMARY KEY,
+    ci_id UUID NOT NULL REFERENCES export_commercial_invoices(id),
+    description VARCHAR(255) NOT NULL,
+    quantity DECIMAL(12,2) DEFAULT 1,
+    unit_price DECIMAL(12,2) DEFAULT 0,
+    amount DECIMAL(12,2) DEFAULT 0,
+    hs_code VARCHAR(50)
+);
+
+CREATE TABLE export_packing_lists (
+    id UUID PRIMARY KEY,
+    export_job_id UUID NOT NULL REFERENCES export_jobs(id),
+    pl_no VARCHAR(50) NOT NULL,
+    date TIMESTAMP,
+    shipper VARCHAR(255),
+    consignee VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE export_packing_list_lines (
+    id UUID PRIMARY KEY,
+    pl_id UUID NOT NULL REFERENCES export_packing_lists(id),
+    description VARCHAR(255) NOT NULL,
+    quantity DECIMAL(12,2) DEFAULT 1,
+    units VARCHAR(50),
+    gross_weight DECIMAL(12,2) DEFAULT 0,
+    net_weight DECIMAL(12,2) DEFAULT 0,
+    dimensions VARCHAR(100),
+    marks VARCHAR(255)
+);
+```
+
+### 5.7 Warehouse Service Schema (NEW)
+
+The Warehouse Service uses its own database `erp_warehouse` (own schema per service).
+
+```sql
+CREATE TABLE warehouses (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    code VARCHAR(50) UNIQUE NOT NULL,
+    location VARCHAR(255),
+    manager VARCHAR(255),
+    status VARCHAR(50) DEFAULT 'ACTIVE',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE inventory_items (
+    id UUID PRIMARY KEY,
+    warehouse_id UUID NOT NULL,
+    sku VARCHAR(100),
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    category VARCHAR(100),
+    quantity DECIMAL(12,2) DEFAULT 0,
+    unit VARCHAR(50) DEFAULT 'unit',
+    min_stock DECIMAL(12,2) DEFAULT 0,
+    status VARCHAR(50) DEFAULT 'IN_STOCK',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE stock_movements (
+    id UUID PRIMARY KEY,
+    item_id UUID NOT NULL,
+    warehouse_id UUID NOT NULL,
+    movement_type VARCHAR(50) NOT NULL,
+    quantity DECIMAL(12,2) NOT NULL,
+    reference_type VARCHAR(100),
+    reference_id UUID,
+    notes VARCHAR(255),
+    created_by VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
 ---
 
 ## 6. UI/UX Requirements
@@ -681,6 +1105,10 @@ The AI Service has **no database** — it reads live data by relaying the caller
 20. **Item/Service Management** — CRUD for items
 21. **User Management** — Admin-only user CRUD
 22. **Settings** — Company settings
+23. **Finance** — Finance overview with analytics, quotations, vendor bills and payments tabs
+24. **Containers** — Container registry with status tracking and event history
+25. **Air Jobs** — Air freight (AWB) job list with full workflow actions and activity log
+26. **Warehouse** — Warehouse and inventory management with stock movements and summary
 
 ### 6.2 Global Components
 - **AI Chat Assistant** — floating chat widget available on all pages; shows online/offline status; quick-question chips; offline fallback mode badge
