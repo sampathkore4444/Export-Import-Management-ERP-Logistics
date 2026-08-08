@@ -288,6 +288,64 @@
     .footer-grid { grid-template-columns: 1fr; }
     .nav-cta .btn { display: none; }
   }
+
+  /* ===== Chat widget ===== */
+  .chat-fab {
+    position: fixed; right: 22px; bottom: 22px; z-index: 1000;
+    width: 58px; height: 58px; border-radius: 50%; border: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary-dark));
+    color: #fff; font-size: 26px; box-shadow: 0 12px 28px rgba(2,132,199,.4);
+    display: grid; place-items: center; transition: transform .2s; font-family: inherit; line-height: 1;
+  }
+  .chat-fab:hover { transform: translateY(-3px) scale(1.04); }
+  .chat-panel {
+    position: fixed; right: 22px; bottom: 92px; z-index: 1000;
+    width: 384px; max-width: calc(100vw - 32px); height: 540px; max-height: calc(100vh - 130px);
+    background: #fff; border: 1px solid var(--line); border-radius: 18px;
+    box-shadow: var(--shadow-lg); display: none; flex-direction: column; overflow: hidden;
+  }
+  .chat-panel.open { display: flex; }
+  .chat-head {
+    background: var(--bg-grad); color: #fff; padding: 14px 16px;
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  }
+  .chat-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.18); display: grid; place-items: center; font-size: 19px; flex-shrink: 0; }
+  .chat-head b { display: block; font-size: 15px; }
+  .chat-head small { font-size: 12px; color: rgba(255,255,255,.82); }
+  .chat-close { margin-left: auto; background: rgba(255,255,255,.16); border: none; color: #fff; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-size: 14px; line-height: 1; flex-shrink: 0; }
+  .chat-msgs { flex: 1; overflow-y: auto; padding: 14px; background: var(--bg-soft); display: flex; flex-direction: column; gap: 10px; }
+  .chat-msg { max-width: 86%; padding: 10px 13px; border-radius: 14px; font-size: 13.5px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
+  .chat-msg.bot { background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 4px; align-self: flex-start; }
+  .chat-msg.user { background: linear-gradient(135deg, var(--primary-light), var(--primary-dark)); color: #fff; border-bottom-right-radius: 4px; align-self: flex-end; }
+  .chat-msg .tag { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: .4px; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; }
+  .chat-quick { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 12px; background: var(--bg-soft); flex-shrink: 0; }
+  .chat-chip {
+    border: 1px solid #bae6fd; background: #e0f2fe; color: var(--primary-dark);
+    border-radius: 999px; padding: 7px 13px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: all .2s;
+  }
+  .chat-chip:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .chat-inputrow { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); background: #fff; flex-shrink: 0; }
+  .chat-input {
+    flex: 1; border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px;
+    font-size: 14px; font-family: inherit; outline: none; color: var(--ink); min-width: 0;
+  }
+  .chat-input:focus { border-color: var(--primary); }
+  .chat-send {
+    border: none; border-radius: 12px; padding: 0 18px; cursor: pointer;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary-dark)); color: #fff;
+    font-weight: 700; font-size: 14px; font-family: inherit; flex-shrink: 0;
+  }
+  .chat-send:disabled { opacity: .5; cursor: default; }
+  .chat-typing { display: inline-flex; gap: 4px; }
+  .chat-typing i { width: 6px; height: 6px; border-radius: 50%; background: #94a3b8; animation: chatBlink 1.2s infinite; }
+  .chat-typing i:nth-child(2) { animation-delay: .2s; }
+  .chat-typing i:nth-child(3) { animation-delay: .4s; }
+  @keyframes chatBlink { 0%, 80%, 100% { opacity: .3; } 40% { opacity: 1; } }
+  @media (max-width: 480px) {
+    .chat-panel { right: 16px; bottom: 84px; width: calc(100vw - 32px); }
+    .chat-fab { right: 16px; bottom: 16px; }
+  }
 </style>
 </head>
 <body>
@@ -687,6 +745,26 @@
   </div>
 </footer>
 
+<!-- ===== CHAT WIDGET ===== -->
+<button class="chat-fab" id="chat-fab" aria-label="CargoFlow Assistant">💬</button>
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-head">
+    <div class="chat-avatar">🤖</div>
+    <div><b data-i18n="chat.title">CargoFlow Assistant</b><small data-i18n="chat.subtitle">Answers about CargoFlow ERP</small></div>
+    <button class="chat-close" id="chat-close" aria-label="Close">✕</button>
+  </div>
+  <div class="chat-msgs" id="chat-msgs"></div>
+  <div class="chat-quick" id="chat-quick" style="display:none">
+    <button class="chat-chip" data-chat-quick="chat.quick1" data-i18n="chat.quick1">What can CargoFlow do?</button>
+    <button class="chat-chip" data-chat-quick="chat.quick2" data-i18n="chat.quick2">Show me the pricing plans</button>
+    <button class="chat-chip" data-chat-quick="chat.quick3" data-i18n="chat.quick3">Tell me about the AI assistant</button>
+  </div>
+  <div class="chat-inputrow">
+    <input class="chat-input" id="chat-input" data-i18n-placeholder="chat.placeholder" placeholder="Ask about features, pricing, AI..." />
+    <button class="chat-send" id="chat-send" data-i18n="chat.send" aria-label="Send">Send</button>
+  </div>
+</div>
+
 <script>
   // ===== Internationalization =====
   const I18N = {
@@ -828,7 +906,16 @@
       "footer.touch": "Get in touch",
       "footer.docs": "Documentation",
       "footer.rights": "© 2026 CargoFlow ERP. All rights reserved.",
-      "footer.tag": "CargoFlow ERP · Import &amp; Export Management System"
+      "footer.tag": "CargoFlow ERP · Import &amp; Export Management System",
+      "chat.title": "CargoFlow Assistant",
+      "chat.subtitle": "Answers about CargoFlow ERP",
+      "chat.placeholder": "Ask about features, pricing, AI...",
+      "chat.send": "Send",
+      "chat.welcome": "Hi! I'm the CargoFlow ERP assistant. Ask me about the platform — features, import/export workflows, fleet management, AI capabilities, pricing plans, security, or how to get started.",
+      "chat.offline": "The AI assistant is temporarily offline. Please try again in a moment.",
+      "chat.quick1": "What can CargoFlow do?",
+      "chat.quick2": "Show me the pricing plans",
+      "chat.quick3": "Tell me about the AI assistant"
     },
     km: {
       meta: {
@@ -968,7 +1055,16 @@
       "footer.touch": "ទំនាក់ទំនង",
       "footer.docs": "ឯកសារណែនាំ",
       "footer.rights": "© 2026 CargoFlow ERP។ រក្សាសិទ្ធិគ្រប់យ៉ាង។",
-      "footer.tag": "CargoFlow ERP · ប្រព័ន្ធគ្រប់គ្រងការនាំចូល និងនាំចេញ"
+      "footer.tag": "CargoFlow ERP · ប្រព័ន្ធគ្រប់គ្រងការនាំចូល និងនាំចេញ",
+      "chat.title": "ជំនួយការ CargoFlow",
+      "chat.subtitle": "ចម្លើយអំពី CargoFlow ERP",
+      "chat.placeholder": "សួរអំពីមុខងារ, តម្លៃ, AI...",
+      "chat.send": "ផ្ញើ",
+      "chat.welcome": "ជំរាបសួរ! ខ្ញុំជាជំនួយការ CargoFlow ERP។ សួរខ្ញុំអំពីវេទិកា — មុខងារ, លំហូរនាំចូល/នាំចេញ, ការគ្រប់គ្រងកងនាវា, សមត្ថភាព AI, ផែនការតម្លៃ, សុវត្ថិភាព ឬរបៀបចាប់ផ្តើម។",
+      "chat.offline": "ជំនួយការ AI កំពុងមិនដំណើរការជាបណ្តោះអាសន្ន។ សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ។",
+      "chat.quick1": "តើ CargoFlow អាចធ្វើអ្វីបាន?",
+      "chat.quick2": "បង្ហាញផែនការតម្លៃ",
+      "chat.quick3": "ប្រាប់ខ្ញុំអំពីជំនួយការ AI"
     },
     zh: {
       meta: {
@@ -1108,7 +1204,16 @@
       "footer.touch": "联系我们",
       "footer.docs": "文档",
       "footer.rights": "© 2026 CargoFlow ERP。保留所有权利。",
-      "footer.tag": "CargoFlow ERP · 进出口管理系统"
+      "footer.tag": "CargoFlow ERP · 进出口管理系统",
+      "chat.title": "CargoFlow 助手",
+      "chat.subtitle": "关于 CargoFlow ERP 的解答",
+      "chat.placeholder": "询问功能、定价、AI...",
+      "chat.send": "发送",
+      "chat.welcome": "您好！我是 CargoFlow ERP 助手。请向我询问平台相关问题——功能、进出口流程、车队管理、AI能力、定价方案、安全性或如何开始使用。",
+      "chat.offline": "AI 助手暂时离线，请稍后再试。",
+      "chat.quick1": "CargoFlow 能做什么？",
+      "chat.quick2": "查看定价方案",
+      "chat.quick3": "介绍 AI 助手"
     }
   };
 
@@ -1207,6 +1312,10 @@
       const val = dict[el.dataset.i18n];
       if (val !== undefined) el.innerHTML = val;
     });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const val = dict[el.dataset.i18nPlaceholder];
+      if (val !== undefined) el.setAttribute('placeholder', val);
+    });
     document.getElementById('lang-select').value = lang;
     renderFlow(activeFlow);
     localStorage.setItem('cargoflow_lang', lang);
@@ -1232,6 +1341,101 @@
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
   }, { threshold: 0.12 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // ===== Marketing chatbot =====
+  const AI_URL = 'http://localhost:8005/api/ai/marketing-chat';
+  const chatFab = document.getElementById('chat-fab');
+  const chatPanel = document.getElementById('chat-panel');
+  const chatMsgs = document.getElementById('chat-msgs');
+  const chatQuick = document.getElementById('chat-quick');
+  const chatInput = document.getElementById('chat-input');
+  const chatSend = document.getElementById('chat-send');
+  const chatClose = document.getElementById('chat-close');
+  let chatOpened = false;
+  let chatSending = false;
+
+  function chatMsg(role, content, tag) {
+    const el = document.createElement('div');
+    el.className = 'chat-msg ' + role;
+    if (tag) {
+      el.innerHTML = `<span class="tag">${tag}</span>` + content;
+    } else {
+      el.textContent = content;
+    }
+    chatMsgs.appendChild(el);
+    chatMsgs.scrollTop = chatMsgs.scrollHeight;
+  }
+
+  function chatTyping(show) {
+    const existing = document.getElementById('chat-typing');
+    if (existing) existing.remove();
+    if (show) {
+      const el = document.createElement('div');
+      el.className = 'chat-msg bot';
+      el.id = 'chat-typing';
+      el.innerHTML = '<span class="chat-typing"><i></i><i></i><i></i></span>';
+      chatMsgs.appendChild(el);
+      chatMsgs.scrollTop = chatMsgs.scrollHeight;
+    }
+  }
+
+  async function chatSendMsg(text) {
+    const message = (text ?? chatInput.value).trim();
+    if (!message || chatSending) return;
+    chatMsg('user', message);
+    chatInput.value = '';
+    chatQuick.style.display = 'none';
+    chatSending = true;
+    chatSend.disabled = true;
+    chatTyping(true);
+    try {
+      const res = await fetch(AI_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, lang: currentLang })
+      });
+      if (!res.ok) throw new Error('bad status');
+      const data = await res.json();
+      chatMsg('bot', data.answer, data.mode === 'fallback' ? 'offline mode' : '');
+    } catch {
+      const dict = I18N[currentLang] || I18N.en;
+      chatMsg('bot', dict['chat.offline'] || 'The AI assistant is temporarily offline. Please try again in a moment.');
+    } finally {
+      chatTyping(false);
+      chatSending = false;
+      chatSend.disabled = false;
+      chatInput.focus();
+    }
+  }
+
+  function chatOpen() {
+    chatOpened = true;
+    chatPanel.classList.add('open');
+    chatFab.textContent = '✕';
+    if (chatMsgs.children.length === 0) {
+      const dict = I18N[currentLang] || I18N.en;
+      chatMsg('bot', dict['chat.welcome'] || '');
+      chatQuick.style.display = 'flex';
+    }
+    chatInput.focus();
+  }
+
+  function chatClosePanel() {
+    chatOpened = false;
+    chatPanel.classList.remove('open');
+    chatFab.textContent = '💬';
+  }
+
+  chatFab.addEventListener('click', () => chatOpened ? chatClosePanel() : chatOpen());
+  chatClose.addEventListener('click', chatClosePanel);
+  chatSend.addEventListener('click', () => chatSendMsg());
+  chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') chatSendMsg(); });
+  document.querySelectorAll('[data-chat-quick]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const dict = I18N[currentLang] || I18N.en;
+      chatSendMsg(dict[btn.dataset.chatQuick] || btn.textContent);
+    });
+  });
 </script>
 </body>
 </html>

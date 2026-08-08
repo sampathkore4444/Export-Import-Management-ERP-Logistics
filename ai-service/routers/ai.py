@@ -250,6 +250,208 @@ def ai_chat(req: ChatRequest, user: dict = Depends(get_current_user)):
         return {"answer": fallback_answer(req.message, ctx), "mode": "fallback", "context": ctx}
 
 
+# ---------------------------------------------------------------- marketing site chatbot (public)
+class MarketingChatRequest(BaseModel):
+    message: str
+    lang: str = "en"
+
+MARKETING_KB = [
+    {
+        "topic": "Overview",
+        "keywords": ["what can", "overview", "features", "modules", "platform", "system", "do you offer", "what is cargoflow", "erp"],
+        "answer": "CargoFlow ERP is an all-in-one import/export logistics management platform for freight forwarders, agents and 3PL operators. It covers the full shipment lifecycle (import and export), fleet management, invoicing & billing, documents & templates, master data, search & alerts, roles & approvals, reports & dashboard, plus a built-in self-hosted AI copilot.",
+    },
+    {
+        "topic": "Import workflow",
+        "keywords": ["import", "inbound", "booking", "customs clearance", "customs permit", "license", "permit", "vessel arrival", "container return", "consignee", "delivery", "unload"],
+        "answer": "The import workflow guides a shipment from booking receipt and approval, through license & customs permits, truck assignment (internal or outsourced), vessel arrival, customs clearance, delivery and unloading, to container return and job closure.",
+    },
+    {
+        "topic": "Export workflow",
+        "keywords": ["export", "outbound", "stuffing", "empty pickup", "gate-in", "eir", "departure", "etd", "shipping out", "export clearance"],
+        "answer": "The export flow covers outbound booking, approval, license & permits, empty container pickup, stuffing at the shipper, port gate-in with EIR, vessel departure, export clearance and finally job closure — mirrored to the import process.",
+    },
+    {
+        "topic": "Fleet management",
+        "keywords": ["fleet", "truck", "trailer", "driver", "vehicle", "outsource", "vendor", "assign", "document expiry", "ic card", "licence"],
+        "answer": "Fleet management tracks trucks, trailers and drivers with document expiry monitoring (IC card, driving licence), availability status and one-click assignment. You can use your own fleet or outsource shipments to approved vendors.",
+    },
+    {
+        "topic": "Invoicing & billing",
+        "keywords": ["invoice", "billing", "bill", "payment", "coa", "tax", "revenue", "credit", "outstanding"],
+        "answer": "Invoicing & billing creates per-job invoices with line items, COA mapping, tax calculation and a status workflow, linking revenue directly to each shipment.",
+    },
+    {
+        "topic": "Documents & templates",
+        "keywords": ["document", "template", "bl", "bill of lading", "packing list", "attach", "file", "pdf"],
+        "answer": "You can attach Bills of Lading, packing lists and permits to each job, and reuse shipment templates to book routine cargo in seconds.",
+    },
+    {
+        "topic": "Master data",
+        "keywords": ["master data", "customer", "client", "vendor", "supplier", "item", "location", "settings", "credit terms"],
+        "answer": "Master data centralizes customers, vendors, locations, items/services and company settings, including credit terms and COA codes.",
+    },
+    {
+        "topic": "AI assistant",
+        "keywords": ["ai", "assistant", "copilot", "ocr", "extract", "predict", "delay prediction", "weekly report", "smart assist", "ollama", "chat"],
+        "answer": "CargoFlow includes a private, self-hosted AI copilot that answers questions about your operations in plain language, reads shipping documents with OCR extraction, predicts delays and ETAs, generates a weekly operations report and gives smart job-assist tips. It runs fully offline with no external APIs.",
+    },
+    {
+        "topic": "Search & alerts",
+        "keywords": ["search", "alert", "notification", "eta", "etd", "expiry", "reminder"],
+        "answer": "Global search covers jobs, trucks, customers and vendors, with real-time alerts for missed ETA/ETD and expiring driver documents.",
+    },
+    {
+        "topic": "Reports & dashboard",
+        "keywords": ["report", "dashboard", "kpi", "calendar", "print", "performance"],
+        "answer": "The platform includes a live KPI dashboard, a calendar view, printable job cards and an AI-generated weekly operations report.",
+    },
+    {
+        "topic": "Roles & approvals",
+        "keywords": ["role", "approval", "admin", "manager", "staff", "security", "jwt", "permission", "access", "authorize"],
+        "answer": "CargoFlow uses JWT security with admin, manager and staff roles. Approvals, rejections and destructive actions are gated by role.",
+    },
+    {
+        "topic": "Pricing",
+        "keywords": ["price", "pricing", "plan", "cost", "costs", "month", "monthly", "trial", "free", "subscribe", "subscription", "upgrade", "starter", "business", "enterprise", "how much", "per user"],
+        "answer": "Pricing: Starter is $99/month for up to 5 users (import & export workflows, fleet management, master data, email support). Business is $249/month for up to 25 users and adds invoicing & billing, documents & templates, the AI assistant and priority support. Enterprise is custom pricing for unlimited users, on-premise/private-cloud hosting, custom integrations and a dedicated success manager. Every plan starts with a 14-day free trial, no credit card required.",
+    },
+    {
+        "topic": "Security & privacy",
+        "keywords": ["security", "secure", "privacy", "private", "data", "safe", "self-hosted", "self hosted", "offline", "internet", "network", "local", "infrastructure", "own server", "private cloud"],
+        "answer": "CargoFlow runs on your own infrastructure. All AI inference happens locally with self-hosted models, so your shipment data never leaves your network. AI features do not require an internet connection and fall back to a rule-based mode if the AI service is offline.",
+    },
+    {
+        "topic": "Deployment",
+        "keywords": ["deploy", "deployment", "on-premise", "on premise", "hosting", "install", "installation", "server", "microservice", "microservices"],
+        "answer": "CargoFlow can be deployed on-premise or in a private cloud (Enterprise plan), or hosted for you. All services are self-contained microservices.",
+    },
+    {
+        "topic": "Languages",
+        "keywords": ["language", "khmer", "chinese", "english", "translate", "translation", "multilingual", "ខ្មែរ", "中文"],
+        "answer": "The CargoFlow website is available in English, Khmer and Chinese via the language selector, and the assistant can answer in the language you write in.",
+    },
+    {
+        "topic": "Getting started",
+        "keywords": ["start", "get started", "begin", "demo", "sign up", "register", "signup", "onboarding", "book", "contact", "sales", "buy", "purchase", "support", "help"],
+        "answer": "You can book a live demo or start a free 14-day trial from the site. Every plan includes a guided onboarding call, and our sales team is available at sales@cargoflow.app.",
+    },
+    {
+        "topic": "Company",
+        "keywords": ["cargoflow", "about", "company", "who are you", "who is", "forwarder", "freight", "3pl", "agent", "logistics"],
+        "answer": "CargoFlow ERP is built for freight forwarders, agents and 3PL operators to manage import and export shipments, their fleet, invoicing, documents and AI-assisted reporting on one platform.",
+    },
+]
+
+GREETING_KEYWORDS = [
+    "hi", "hello", "hey", "how are you", "good morning", "good afternoon", "good evening", "greetings",
+    "thanks", "thank you", "thankyou", "bye", "goodbye", "nice to meet you",
+    "សួស្តី", "ជំរាបសួរ", "អរគុណ", "ជំរាបលា",
+    "你好", "您好", "谢谢", "再见",
+]
+
+MARKETING_TEXTS = {
+    "welcome": {
+        "en": "Hi! I'm the CargoFlow ERP assistant. Ask me about the platform — features, import/export workflows, fleet management, AI capabilities, pricing plans, security, or how to get started.",
+        "km": "ជំរាបសួរ! ខ្ញុំជាជំនួយការ CargoFlow ERP។ សួរខ្ញុំអំពីវេទិកា — មុខងារ, លំហូរនាំចូល/នាំចេញ, ការគ្រប់គ្រងកងនាវា, សមត្ថភាព AI, ផែនការតម្លៃ, សុវត្ថិភាព ឬរបៀបចាប់ផ្តើម។",
+        "zh": "您好！我是 CargoFlow ERP 助手。请向我询问平台相关问题——功能、进出口流程、车队管理、AI能力、定价方案、安全性或如何开始使用。",
+    },
+    "refusal": {
+        "en": "I'm the CargoFlow Assistant and I can only answer questions about the CargoFlow ERP platform. Ask me about import/export workflows, fleet management, AI features, pricing plans, or security.",
+        "km": "ខ្ញុំជាជំនួយការ CargoFlow ហើយខ្ញុំអាចឆ្លើយបានតែសំណួរអំពីវេទិកា CargoFlow ERP ប៉ុណ្ណោះ។ សួរខ្ញុំអំពីលំហូរនាំចូល/នាំចេញ, ការគ្រប់គ្រងកងនាវា, មុខងារ AI, ផែនការតម្លៃ ឬសុវត្ថិភាព។",
+        "zh": "我是 CargoFlow 助手，只能回答关于 CargoFlow ERP 平台的问题。您可以询问进出口流程、车队管理、AI功能、定价方案或安全性。",
+    },
+    "unavailable": {
+        "en": "The AI assistant is temporarily offline. Please try again in a moment.",
+        "km": "ជំនួយការ AI កំពុងមិនដំណើរការជាបណ្តោះអាសន្ន។ សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ។",
+        "zh": "AI 助手暂时离线，请稍后再试。",
+    },
+}
+
+
+def _marketing_keywords() -> set:
+    words = set()
+    for entry in MARKETING_KB:
+        for k in entry["keywords"]:
+            words.add(k)
+    return words
+
+
+MARKETING_PLATFORM_WORDS = _marketing_keywords()
+
+
+def classify_marketing(message: str) -> str:
+    text = message.lower().strip()
+    if any(k in text for k in MARKETING_PLATFORM_WORDS):
+        return "platform"
+    if any(k in text for k in GREETING_KEYWORDS):
+        return "greeting"
+    return "off_topic"
+
+
+def marketing_kb_prompt() -> str:
+    lines = []
+    for entry in MARKETING_KB:
+        lines.append(f"- {entry['topic']}: {entry['answer']}")
+    return "\n".join(lines)
+
+
+def match_marketing_kb(message: str):
+    text = message.lower()
+    best = None
+    best_score = 0
+    for entry in MARKETING_KB:
+        score = sum(1 for k in entry["keywords"] if k in text)
+        if score > best_score:
+            best_score = score
+            best = entry
+    return best if best_score > 0 else None
+
+
+@router.post("/marketing-chat")
+def marketing_chat(req: MarketingChatRequest):
+    lang = req.lang if req.lang in MARKETING_TEXTS["welcome"] else "en"
+
+    kind = classify_marketing(req.message)
+    if kind == "greeting":
+        return {"answer": MARKETING_TEXTS["welcome"][lang], "mode": "static", "lang": lang}
+    if kind == "off_topic":
+        return {"answer": MARKETING_TEXTS["refusal"][lang], "mode": "static", "lang": lang}
+
+    if not ollama_client.ollama_is_available():
+        match = match_marketing_kb(req.message)
+        answer = match["answer"] if match else MARKETING_TEXTS["unavailable"][lang]
+        return {"answer": answer, "mode": "fallback", "lang": lang}
+
+    system_prompt = (
+        "You are the CargoFlow Assistant, the support and sales chatbot for CargoFlow ERP — "
+        "an import/export logistics management platform. You answer ONLY questions about CargoFlow ERP: "
+        "its features, import/export workflows, fleet management, invoicing, documents, AI capabilities, "
+        "pricing, security, deployment and company.\n\n"
+        "Use ONLY the facts below. Never invent or exaggerate features, prices or capabilities. "
+        "Be concise and friendly; use bullet points when listing items. "
+        "Respond in the same language the visitor used (English, Khmer or Chinese).\n\n"
+        f"FACTS:\n{marketing_kb_prompt()}\n\n"
+        "GUARDRAILS:\n"
+        "- If a question is NOT about CargoFlow ERP (for example general knowledge, cooking, politics, "
+        "weather, coding, or anything unrelated), politely refuse and redirect, saying you can only help "
+        "with questions about the CargoFlow ERP platform.\n"
+        "- Do not answer factual questions unrelated to the platform even if the visitor insists."
+    )
+    messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": req.message}]
+
+    try:
+        res = ollama_client.chat(ollama_client.settings.ollama_text_model, messages, temperature=0.3)
+        answer = res.get("message", {}).get("content", "").strip()
+        if not answer:
+            raise ValueError("empty answer")
+        return {"answer": answer, "mode": "ollama", "lang": lang}
+    except Exception:
+        match = match_marketing_kb(req.message)
+        answer = match["answer"] if match else MARKETING_TEXTS["unavailable"][lang]
+        return {"answer": answer, "mode": "fallback", "lang": lang}
+
+
 # ---------------------------------------------------------------- extract document
 def rasterize_pdf(data: bytes, max_pages: int = 3) -> List[bytes]:
     try:
