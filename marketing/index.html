@@ -7,7 +7,7 @@
 <meta name="description" content="CargoFlow ERP is an all-in-one import/export logistics management platform with AI-powered assistants, full shipment lifecycle tracking, fleet management, and invoicing." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Khmer:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
 <style>
   :root {
     --primary: #0ea5e9;
@@ -28,7 +28,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', 'Noto Sans Khmer', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
     color: var(--ink);
     background: var(--bg);
     line-height: 1.6;
@@ -45,8 +45,8 @@
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--line);
   }
-  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; }
-  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; white-space: nowrap; }
   .brand-mark {
     width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center;
     background: linear-gradient(135deg, var(--primary-light), var(--primary-dark));
@@ -58,6 +58,14 @@
   .nav-links a { color: var(--ink-soft); font-weight: 500; font-size: 15px; transition: color .2s; }
   .nav-links a:hover { color: var(--primary); }
   .nav-cta { display: flex; align-items: center; gap: 12px; }
+  .lang-select {
+    appearance: none; -webkit-appearance: none;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2364748b' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E") no-repeat right 10px center;
+    border: 1px solid var(--line); border-radius: 10px;
+    padding: 8px 28px 8px 12px; font-weight: 600; font-size: 13px;
+    color: var(--ink-soft); cursor: pointer; font-family: inherit;
+  }
+  .lang-select:focus { outline: none; border-color: var(--primary); }
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     border-radius: 12px; padding: 12px 22px; font-weight: 600; font-size: 15px;
@@ -122,9 +130,9 @@
   .hero-kpi small { color: rgba(255,255,255,.75); font-size: 12px; }
   .hero-timeline { background: rgba(255,255,255,.08); border-radius: 14px; padding: 14px; }
   .hero-timeline .t { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 7px 0; color: rgba(255,255,255,.9); }
-  .hero-timeline .t i { width: 22px; height: 22px; border-radius: 50%; background: rgba(74,222,128,.25); display: grid; place-items: center; font-size: 11px; }
+  .hero-timeline .t i { width: 22px; height: 22px; border-radius: 50%; background: rgba(74,222,128,.25); display: grid; place-items: center; font-size: 11px; flex-shrink: 0; }
   .hero-timeline .t.dim i { background: rgba(255,255,255,.12); }
-  .hero-timeline .t .bar { margin-left: auto; width: 70px; height: 7px; border-radius: 6px; background: rgba(255,255,255,.15); overflow: hidden; }
+  .hero-timeline .t .bar { margin-left: auto; width: 70px; height: 7px; border-radius: 6px; background: rgba(255,255,255,.15); overflow: hidden; flex-shrink: 0; }
   .hero-timeline .t .bar i { display: block; width: 70%; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--primary-light), #7dd3fc); }
 
   /* ===== Logo strip ===== */
@@ -165,10 +173,10 @@
 
   /* ===== Workflow ===== */
   .workflow { background: var(--bg-soft); }
-  .flow-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 40px; }
+  .flow-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; }
   .flow-tab {
     padding: 11px 26px; border-radius: 999px; font-weight: 700; font-size: 15px; cursor: pointer;
-    border: 1px solid var(--line); background: #fff; color: var(--ink-soft); transition: all .2s;
+    border: 1px solid var(--line); background: #fff; color: var(--ink-soft); transition: all .2s; font-family: inherit;
   }
   .flow-tab.active { background: linear-gradient(135deg, var(--primary-light), var(--primary-dark)); color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(2,132,199,.3); }
   .flow-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
@@ -188,6 +196,7 @@
   .ai-card { border: 1px solid var(--line); border-radius: 20px; padding: 28px; background: var(--bg); }
   .ai-card.highlight { background: linear-gradient(135deg, #0c4a6e, #075985); color: #fff; border-color: transparent; box-shadow: var(--shadow-lg); }
   .ai-card.highlight p { color: rgba(255,255,255,.85); }
+  .ai-card.highlight h3 { font-size: 20px; }
   .ai-chat-preview { background: rgba(255,255,255,.08); border-radius: 14px; padding: 16px; margin-top: 18px; }
   .ai-chat-preview .msg { font-size: 13.5px; padding: 9px 13px; border-radius: 12px; margin-bottom: 10px; max-width: 88%; }
   .ai-chat-preview .msg.q { background: #0ea5e9; color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
@@ -237,9 +246,9 @@
   /* ===== FAQ ===== */
   .faq-wrap { max-width: 760px; margin: 0 auto; }
   .faq { border: 1px solid var(--line); border-radius: 14px; margin-bottom: 12px; overflow: hidden; background: var(--bg); }
-  .faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; font-weight: 600; font-size: 15.5px; }
+  .faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; font-weight: 600; font-size: 15.5px; font-family: inherit; }
   .faq summary::-webkit-details-marker { display: none; }
-  .faq summary::after { content: "+"; font-size: 22px; color: var(--primary); font-weight: 700; transition: transform .2s; }
+  .faq summary::after { content: "+"; font-size: 22px; color: var(--primary); font-weight: 700; transition: transform .2s; flex-shrink: 0; margin-left: 12px; }
   .faq[open] summary::after { transform: rotate(45deg); }
   .faq p { padding: 0 22px 18px; color: var(--muted); font-size: 14.5px; }
 
@@ -277,6 +286,7 @@
     section { padding: 64px 0; }
     .flow-steps { grid-template-columns: 1fr; }
     .footer-grid { grid-template-columns: 1fr; }
+    .nav-cta .btn { display: none; }
   }
 </style>
 </head>
@@ -290,15 +300,20 @@
       <span>Cargo<span><b>Flow</b></span></span>
     </a>
     <div class="nav-links">
-      <a href="#features">Features</a>
-      <a href="#workflow">Workflow</a>
-      <a href="#ai">AI</a>
-      <a href="#pricing">Pricing</a>
-      <a href="#faq">FAQ</a>
+      <a href="#features" data-i18n="nav.features">Features</a>
+      <a href="#workflow" data-i18n="nav.workflow">Workflow</a>
+      <a href="#ai" data-i18n="nav.ai">AI</a>
+      <a href="#pricing" data-i18n="nav.pricing">Pricing</a>
+      <a href="#faq" data-i18n="nav.faq">FAQ</a>
     </div>
     <div class="nav-cta">
-      <a href="#pricing" class="btn btn-outline">Book a demo</a>
-      <a href="#pricing" class="btn btn-primary">Get started</a>
+      <select id="lang-select" class="lang-select" aria-label="Language">
+        <option value="en">English</option>
+        <option value="km">ភាសាខ្មែរ</option>
+        <option value="zh">中文</option>
+      </select>
+      <a href="#pricing" class="btn btn-outline" data-i18n="nav.demo">Book a demo</a>
+      <a href="#pricing" class="btn btn-primary" data-i18n="nav.getStarted">Get started</a>
     </div>
   </div>
 </nav>
@@ -307,16 +322,16 @@
 <header class="hero" id="top">
   <div class="container hero-inner">
     <div>
-      <span class="hero-eyebrow"><span class="dot"></span> Now with built-in AI assistant</span>
-      <h1>Run your entire import &amp; <em>export</em> operation on one platform</h1>
-      <p class="lead">
+      <span class="hero-eyebrow"><span class="dot"></span> <span data-i18n="hero.eyebrow">Now with built-in AI assistant</span></span>
+      <h1 data-i18n="hero.title">Run your entire import &amp; <em>export</em> operation on one platform</h1>
+      <p class="lead" data-i18n="hero.lead">
         CargoFlow ERP takes shipments from booking to closure — import and export — with fleet
         management, invoicing, documents, and an AI copilot that predicts delays, reads your
         shipping documents, and answers questions about your live operations.
       </p>
       <div class="hero-actions">
-        <a href="#pricing" class="btn btn-white">Request a demo</a>
-        <a href="#ai" class="btn btn-ghost-light">Explore the AI features</a>
+        <a href="#pricing" class="btn btn-white" data-i18n="hero.demo">Request a demo</a>
+        <a href="#ai" class="btn btn-ghost-light" data-i18n="hero.exploreAI">Explore the AI features</a>
       </div>
       <div class="hero-proof">
         <div class="avatars">
@@ -325,7 +340,7 @@
           <span style="background:#22c55e">SL</span>
           <span style="background:#f59e0b">+</span>
         </div>
-        <small><b>Trusted by freight forwarders</b> handling thousands of containers</small>
+        <small data-i18n="hero.proof"><b>Trusted by freight forwarders</b> handling thousands of containers</small>
       </div>
     </div>
 
@@ -336,15 +351,15 @@
         <span class="dots"><i></i><i></i><i></i></span>
       </div>
       <div class="hero-kpi">
-        <div><b>24</b><small>Active jobs</small></div>
-        <div><b>8</b><small>Trucks on road</small></div>
-        <div><b>3</b><small>Delayed alerts</small></div>
+        <div><b>24</b><small data-i18n="hero.activeJobs">Active jobs</small></div>
+        <div><b>8</b><small data-i18n="hero.trucksRoad">Trucks on road</small></div>
+        <div><b>3</b><small data-i18n="hero.delayedAlerts">Delayed alerts</small></div>
       </div>
       <div class="hero-timeline">
-        <div class="t"><i>✓</i> Booking received &amp; approved <span class="bar"><i></i></span></div>
-        <div class="t"><i>✓</i> Customs permit submitted <span class="bar"><i></i></span></div>
-        <div class="t"><i>✓</i> Truck assigned · outsource <span class="bar"><i></i></span></div>
-        <div class="t dim"><i>›</i> Vessel arrival pending <span class="bar"><i></i></span></div>
+        <div class="t"><i>✓</i><span data-i18n="hero.t1">Booking received &amp; approved</span><span class="bar"><i></i></span></div>
+        <div class="t"><i>✓</i><span data-i18n="hero.t2">Customs permit submitted</span><span class="bar"><i></i></span></div>
+        <div class="t"><i>✓</i><span data-i18n="hero.t3">Truck assigned · outsource</span><span class="bar"><i></i></span></div>
+        <div class="t dim"><i>›</i><span data-i18n="hero.t4">Vessel arrival pending</span><span class="bar"><i></i></span></div>
       </div>
     </div>
   </div>
@@ -353,7 +368,7 @@
 <!-- ===== LOGO STRIP ===== -->
 <div class="logo-strip">
   <div class="container">
-    <small>BUILT FOR FORWARDERS, AGENTS &amp; 3PL OPERATORS</small>
+    <small data-i18n="logo.label">BUILT FOR FORWARDERS, AGENTS &amp; 3PL OPERATORS</small>
     <div class="logos">
       <span>MSC</span><span>CMA CGM</span><span>MAERSK</span><span>ONE</span><span>HAPAG</span>
     </div>
@@ -364,55 +379,55 @@
 <section id="features">
   <div class="container">
     <div class="sec-head">
-      <span class="kicker">Everything you need</span>
-      <h2 class="sec-title">One platform for the whole shipment lifecycle</h2>
-      <p class="sec-sub">Stop juggling spreadsheets and WhatsApp. CargoFlow unifies every module your operations team touches daily.</p>
+      <span class="kicker" data-i18n="feat.kicker">Everything you need</span>
+      <h2 class="sec-title" data-i18n="feat.title">One platform for the whole shipment lifecycle</h2>
+      <p class="sec-sub" data-i18n="feat.sub">Stop juggling spreadsheets and WhatsApp. CargoFlow unifies every module your operations team touches daily.</p>
     </div>
     <div class="grid grid-3">
       <div class="card reveal">
         <span class="ic ic-blue">📦</span>
-        <h3>Import Management <span class="tag">CORE</span></h3>
-        <p>Full import workflow: booking receipt → approval → license &amp; permits → trucking → vessel arrival → customs clearance → delivery → container return → closure.</p>
+        <h3 data-i18n="feat.import.title">Import Management <span class="tag">CORE</span></h3>
+        <p data-i18n="feat.import.text">Full import workflow: booking receipt → approval → license &amp; permits → trucking → vessel arrival → customs clearance → delivery → container return → closure.</p>
       </div>
       <div class="card reveal">
         <span class="ic ic-violet">🚢</span>
-        <h3>Export Management <span class="tag">NEW</span></h3>
-        <p>Outbound lifecycle with empty pickup, stuffing, port gate-in &amp; EIR, vessel departure, export clearance and closure — mirrored to your import process.</p>
+        <h3 data-i18n="feat.export.title">Export Management <span class="tag">NEW</span></h3>
+        <p data-i18n="feat.export.text">Outbound lifecycle with empty pickup, stuffing, port gate-in &amp; EIR, vessel departure, export clearance and closure — mirrored to your import process.</p>
       </div>
       <div class="card reveal">
         <span class="ic ic-green">🚚</span>
-        <h3>Fleet Management</h3>
-        <p>Trucks, trailers and drivers with full document expiry tracking (IC, license), availability status and one-click assignment — internal or outsourced to vendors.</p>
+        <h3 data-i18n="feat.fleet.title">Fleet Management</h3>
+        <p data-i18n="feat.fleet.text">Trucks, trailers and drivers with full document expiry tracking (IC, license), availability status and one-click assignment — internal or outsourced to vendors.</p>
       </div>
       <div class="card reveal">
         <span class="ic ic-amber">🧾</span>
-        <h3>Invoicing &amp; Billing</h3>
-        <p>Per-job invoices with line items, COA mapping, tax calculation, and status workflow. Link revenue straight to the shipment.</p>
+        <h3 data-i18n="feat.invoice.title">Invoicing &amp; Billing</h3>
+        <p data-i18n="feat.invoice.text">Per-job invoices with line items, COA mapping, tax calculation, and status workflow. Link revenue straight to the shipment.</p>
       </div>
       <div class="card reveal">
         <span class="ic ic-rose">🗂️</span>
-        <h3>Documents &amp; Templates</h3>
-        <p>Attach BLs, packing lists and permits per job. Reuse shipment templates to book routine cargo in seconds.</p>
+        <h3 data-i18n="feat.doc.title">Documents &amp; Templates</h3>
+        <p data-i18n="feat.doc.text">Attach BLs, packing lists and permits per job. Reuse shipment templates to book routine cargo in seconds.</p>
       </div>
       <div class="card reveal">
         <span class="ic ic-cyan">🧭</span>
-        <h3>Master Data &amp; Settings</h3>
-        <p>Centralize customers, vendors, locations, items/services and company settings with credit terms and COA codes.</p>
+        <h3 data-i18n="feat.master.title">Master Data &amp; Settings</h3>
+        <p data-i18n="feat.master.text">Centralize customers, vendors, locations, items/services and company settings with credit terms and COA codes.</p>
       </div>
       <div class="card reveal">
         <span class="ic ic-blue">🔍</span>
-        <h3>Search &amp; Alerts</h3>
-        <p>Global search across jobs, trucks, customers and vendors. Real-time alerts for past ETA/ETD and expiring driver documents.</p>
+        <h3 data-i18n="feat.search.title">Search &amp; Alerts</h3>
+        <p data-i18n="feat.search.text">Global search across jobs, trucks, customers and vendors. Real-time alerts for past ETA/ETD and expiring driver documents.</p>
       </div>
       <div class="card reveal">
         <span class="ic ic-violet">👥</span>
-        <h3>Roles &amp; Approvals</h3>
-        <p>JWT security with admin, manager and staff roles. Approvals, rejections and destructive actions are gated by role.</p>
+        <h3 data-i18n="feat.roles.title">Roles &amp; Approvals</h3>
+        <p data-i18n="feat.roles.text">JWT security with admin, manager and staff roles. Approvals, rejections and destructive actions are gated by role.</p>
       </div>
       <div class="card reveal">
         <span class="ic ic-green">📈</span>
-        <h3>Reports &amp; Dashboard</h3>
-        <p>Live KPI dashboard, calendar view, printable job cards and an AI-generated weekly operations report.</p>
+        <h3 data-i18n="feat.reports.title">Reports &amp; Dashboard</h3>
+        <p data-i18n="feat.reports.text">Live KPI dashboard, calendar view, printable job cards and an AI-generated weekly operations report.</p>
       </div>
     </div>
   </div>
@@ -422,13 +437,13 @@
 <section class="workflow" id="workflow">
   <div class="container">
     <div class="sec-head">
-      <span class="kicker">How it works</span>
-      <h2 class="sec-title">A guided workflow, end to end</h2>
-      <p class="sec-sub">Every shipment moves through a clearly defined pipeline. Teams always know what's next — and what's blocking progress.</p>
+      <span class="kicker" data-i18n="flow.kicker">How it works</span>
+      <h2 class="sec-title" data-i18n="flow.title">A guided workflow, end to end</h2>
+      <p class="sec-sub" data-i18n="flow.sub">Every shipment moves through a clearly defined pipeline. Teams always know what's next — and what's blocking progress.</p>
     </div>
     <div class="flow-tabs">
-      <button class="flow-tab active" data-flow="import">Import flow</button>
-      <button class="flow-tab" data-flow="export">Export flow</button>
+      <button class="flow-tab active" data-flow="import" data-i18n="flow.tabImport">Import flow</button>
+      <button class="flow-tab" data-flow="export" data-i18n="flow.tabExport">Export flow</button>
     </div>
     <div class="flow-steps" id="flow-steps">
       <!-- injected by JS -->
@@ -440,50 +455,50 @@
 <section class="ai" id="ai">
   <div class="container">
     <div class="sec-head">
-      <span class="kicker">Built-in AI · Ollama powered</span>
-      <h2 class="sec-title">Your AI copilot for logistics operations</h2>
-      <p class="sec-sub">A private, self-hosted AI that lives with your data — no external APIs, fully under your control.</p>
+      <span class="kicker" data-i18n="ai.kicker">Built-in AI powered</span>
+      <h2 class="sec-title" data-i18n="ai.title">Your AI copilot for logistics operations</h2>
+      <p class="sec-sub" data-i18n="ai.sub">A private, self-hosted AI that lives with your data — no external APIs, fully under your control.</p>
     </div>
     <div class="bento">
       <div class="ai-card highlight reveal">
         <span class="ic ic-blue">🤖</span>
-        <h3>CargoFlow AI Assistant</h3>
-        <p>Ask anything in plain language and get answers from your live operations. Works even when the AI engine is offline.</p>
+        <h3 data-i18n="ai.cardTitle">CargoFlow AI Assistant</h3>
+        <p data-i18n="ai.cardText">Ask anything in plain language and get answers from your live operations. Works even when the AI engine is offline.</p>
         <div class="ai-chat-preview">
-          <div class="msg q">Which jobs are delayed this week?</div>
-          <div class="msg a">3 import jobs are past ETA and 1 export job is past ETD. The longest delay is IMP-0821 at 6 days on vessel "MSC ALTAIR".</div>
-          <div class="msg q">How many trucks are available today?</div>
-          <div class="msg a">8 of 12 trucks are available, with 4 assigned to active shipments.</div>
+          <div class="msg q" data-i18n="ai.q1">Which jobs are delayed this week?</div>
+          <div class="msg a" data-i18n="ai.a1">3 import jobs are past ETA and 1 export job is past ETD. The longest delay is IMP-0821 at 6 days on vessel "MSC ALTAIR".</div>
+          <div class="msg q" data-i18n="ai.q2">How many trucks are available today?</div>
+          <div class="msg a" data-i18n="ai.a2">8 of 12 trucks are available, with 4 assigned to active shipments.</div>
         </div>
-        <span class="ai-badge on-dark">● AI ONLINE — OLLAMA</span>
+        <span class="ai-badge on-dark" data-i18n="ai.badge">● AI ONLINE</span>
       </div>
       <div>
         <div class="ai-mini reveal">
           <span class="ic ic-violet">🖨️</span>
           <div>
-            <h4>Document OCR extraction</h4>
-            <p>Upload a PDF or photo of a BL and the vision model extracts container, vessel, dates and parties — then apply it to the job in one click.</p>
+            <h4 data-i18n="ai.ocrTitle">Document OCR extraction</h4>
+            <p data-i18n="ai.ocrText">Upload a PDF or photo of a BL and the vision model extracts container, vessel, dates and parties — then apply it to the job in one click.</p>
           </div>
         </div>
         <div class="ai-mini reveal">
           <span class="ic ic-green">⏱️</span>
           <div>
-            <h4>Delay &amp; ETA prediction</h4>
-            <p>Historical patterns turn into predicted arrival/departure dates with a delay-risk score and confidence level.</p>
+            <h4 data-i18n="ai.delayTitle">Delay &amp; ETA prediction</h4>
+            <p data-i18n="ai.delayText">Historical patterns turn into predicted arrival/departure dates with a delay-risk score and confidence level.</p>
           </div>
         </div>
         <div class="ai-mini reveal">
           <span class="ic ic-amber">📊</span>
           <div>
-            <h4>Weekly AI reports</h4>
-            <p>An auto-generated narrative of your week — new jobs, revenue, bottlenecks and recommended actions.</p>
+            <h4 data-i18n="ai.reportTitle">Weekly AI reports</h4>
+            <p data-i18n="ai.reportText">An auto-generated narrative of your week — new jobs, revenue, bottlenecks and recommended actions.</p>
           </div>
         </div>
         <div class="ai-mini reveal">
           <span class="ic ic-rose">💡</span>
           <div>
-            <h4>Smart job assist</h4>
-            <p>Detects missing fields, stuck jobs, missed ETAs and surfaces the exact next step to keep shipments moving.</p>
+            <h4 data-i18n="ai.assistTitle">Smart job assist</h4>
+            <p data-i18n="ai.assistText">Detects missing fields, stuck jobs, missed ETAs and surfaces the exact next step to keep shipments moving.</p>
           </div>
         </div>
       </div>
@@ -494,10 +509,10 @@
 <!-- ===== STATS ===== -->
 <section class="stats">
   <div class="container stats-grid">
-    <div><b>6</b><span>Modular services</span></div>
-    <div><b>60+</b><span>API endpoints</span></div>
-    <div><b>24/7</b><span>Self-hosted AI</span></div>
-    <div><b>0</b><span>External data required</span></div>
+    <div><b>6</b><span data-i18n="stats.s1">Modular services</span></div>
+    <div><b>60+</b><span data-i18n="stats.s2">API endpoints</span></div>
+    <div><b>24/7</b><span data-i18n="stats.s3">Self-hosted AI</span></div>
+    <div><b>0</b><span data-i18n="stats.s4">External data required</span></div>
   </div>
 </section>
 
@@ -505,51 +520,51 @@
 <section id="pricing">
   <div class="container">
     <div class="sec-head">
-      <span class="kicker">Pricing</span>
-      <h2 class="sec-title">Simple plans that scale with you</h2>
-      <p class="sec-sub">From a single freight desk to a full multi-branch operations team.</p>
+      <span class="kicker" data-i18n="pricing.kicker">Pricing</span>
+      <h2 class="sec-title" data-i18n="pricing.title">Simple plans that scale with you</h2>
+      <p class="sec-sub" data-i18n="pricing.sub">From a single freight desk to a full multi-branch operations team.</p>
     </div>
     <div class="pricing-grid">
       <div class="price-card reveal">
-        <h3>Starter</h3>
-        <div class="price">$99<small>/month</small></div>
-        <p class="desc">For small forwarders getting off spreadsheets.</p>
+        <h3 data-i18n="pricing.starter.name">Starter</h3>
+        <div class="price" data-i18n="pricing.starter.price">$99<small>/month</small></div>
+        <p class="desc" data-i18n="pricing.starter.desc">For small forwarders getting off spreadsheets.</p>
         <ul>
-          <li>Up to 5 users</li>
-          <li>Import &amp; export workflows</li>
-          <li>Fleet management</li>
-          <li>Master data (customers, vendors)</li>
-          <li>Email support</li>
+          <li data-i18n="pricing.starter.f1">Up to 5 users</li>
+          <li data-i18n="pricing.starter.f2">Import &amp; export workflows</li>
+          <li data-i18n="pricing.starter.f3">Fleet management</li>
+          <li data-i18n="pricing.starter.f4">Master data (customers, vendors)</li>
+          <li data-i18n="pricing.starter.f5">Email support</li>
         </ul>
-        <a href="#faq" class="btn btn-outline">Start free trial</a>
+        <a href="#faq" class="btn btn-outline" data-i18n="pricing.btnTrial">Start free trial</a>
       </div>
       <div class="price-card featured reveal">
-        <span class="pop">MOST POPULAR</span>
-        <h3>Business</h3>
-        <div class="price">$249<small>/month</small></div>
-        <p class="desc">For growing teams that need the full picture.</p>
+        <span class="pop" data-i18n="pricing.business.pop">MOST POPULAR</span>
+        <h3 data-i18n="pricing.business.name">Business</h3>
+        <div class="price" data-i18n="pricing.business.price">$249<small>/month</small></div>
+        <p class="desc" data-i18n="pricing.business.desc">For growing teams that need the full picture.</p>
         <ul>
-          <li>Up to 25 users</li>
-          <li>Everything in Starter</li>
-          <li>Invoicing &amp; billing</li>
-          <li>Documents &amp; templates</li>
-          <li>AI assistant, reports &amp; predictions</li>
-          <li>Priority support</li>
+          <li data-i18n="pricing.business.f1">Up to 25 users</li>
+          <li data-i18n="pricing.business.f2">Everything in Starter</li>
+          <li data-i18n="pricing.business.f3">Invoicing &amp; billing</li>
+          <li data-i18n="pricing.business.f4">Documents &amp; templates</li>
+          <li data-i18n="pricing.business.f5">AI assistant, reports &amp; predictions</li>
+          <li data-i18n="pricing.business.f6">Priority support</li>
         </ul>
-        <a href="#faq" class="btn btn-primary">Start free trial</a>
+        <a href="#faq" class="btn btn-primary" data-i18n="pricing.btnTrial">Start free trial</a>
       </div>
       <div class="price-card reveal">
-        <h3>Enterprise</h3>
-        <div class="price">Custom</div>
-        <p class="desc">For multi-branch operators with specific needs.</p>
+        <h3 data-i18n="pricing.enterprise.name">Enterprise</h3>
+        <div class="price" data-i18n="pricing.enterprise.price">Custom</div>
+        <p class="desc" data-i18n="pricing.enterprise.desc">For multi-branch operators with specific needs.</p>
         <ul>
-          <li>Unlimited users</li>
-          <li>Everything in Business</li>
-          <li>On-premise / private-cloud hosting</li>
-          <li>Custom integrations &amp; workflows</li>
-          <li>Dedicated success manager</li>
+          <li data-i18n="pricing.enterprise.f1">Unlimited users</li>
+          <li data-i18n="pricing.enterprise.f2">Everything in Business</li>
+          <li data-i18n="pricing.enterprise.f3">On-premise / private-cloud hosting</li>
+          <li data-i18n="pricing.enterprise.f4">Custom integrations &amp; workflows</li>
+          <li data-i18n="pricing.enterprise.f5">Dedicated success manager</li>
         </ul>
-        <a href="#faq" class="btn btn-outline">Talk to sales</a>
+        <a href="#faq" class="btn btn-outline" data-i18n="pricing.btnSales">Talk to sales</a>
       </div>
     </div>
   </div>
@@ -559,32 +574,32 @@
 <section style="background: var(--bg-soft)">
   <div class="container">
     <div class="sec-head">
-      <span class="kicker">Testimonials</span>
-      <h2 class="sec-title">Loved by operations teams</h2>
+      <span class="kicker" data-i18n="testi.kicker">Testimonials</span>
+      <h2 class="sec-title" data-i18n="testi.title">Loved by operations teams</h2>
     </div>
     <div class="testi-grid">
       <div class="testi reveal">
         <div class="stars">★★★★★</div>
-        <p>"We closed the loop on import and export in one system. The AI copilot reads our BLs and predicts delays before our customers even ask."</p>
+        <p data-i18n="testi.t1.text">"We closed the loop on import and export in one system. The AI copilot reads our BLs and predicts delays before our customers even ask."</p>
         <div class="who">
           <span class="av" style="background:#0ea5e9">SA</span>
-          <div><b>Sophea A.</b><small>Operations Manager, Forwarder Co.</small></div>
+          <div><b>Sophea A.</b><small data-i18n="testi.t1.role">Operations Manager, Forwarder Co.</small></div>
         </div>
       </div>
       <div class="testi reveal">
         <div class="stars">★★★★★</div>
-        <p>"Driver document expiry alerts alone save us from port fines. The workflow approvals keep our team honest and our managers informed."</p>
+        <p data-i18n="testi.t2.text">"Driver document expiry alerts alone save us from port fines. The workflow approvals keep our team honest and our managers informed."</p>
         <div class="who">
           <span class="av" style="background:#8b5cf6">MR</span>
-          <div><b>Meng R.</b><small>Head of Trucking, Pacific Freight</small></div>
+          <div><b>Meng R.</b><small data-i18n="testi.t2.role">Head of Trucking, Pacific Freight</small></div>
         </div>
       </div>
       <div class="testi reveal">
         <div class="stars">★★★★★</div>
-        <p>"The AI weekly report is like a free consultant. It tells us where shipments are stuck so we can act — not guess."</p>
+        <p data-i18n="testi.t3.text">"The AI weekly report is like a free consultant. It tells us where shipments are stuck so we can act — not guess."</p>
         <div class="who">
           <span class="av" style="background:#22c55e">DK</span>
-          <div><b>Dara K.</b><small>Managing Director, Mekong Logistics</small></div>
+          <div><b>Dara K.</b><small data-i18n="testi.t3.role">Managing Director, Mekong Logistics</small></div>
         </div>
       </div>
     </div>
@@ -595,29 +610,29 @@
 <section id="faq">
   <div class="container">
     <div class="sec-head">
-      <span class="kicker">FAQ</span>
-      <h2 class="sec-title">Frequently asked questions</h2>
+      <span class="kicker" data-i18n="faq.kicker">FAQ</span>
+      <h2 class="sec-title" data-i18n="faq.title">Frequently asked questions</h2>
     </div>
     <div class="faq-wrap">
       <details class="faq">
-        <summary>Is our data safe and private?</summary>
-        <p>Yes. CargoFlow runs on your own infrastructure. All AI inference happens locally with self-hosted models — your shipment data never leaves your network.</p>
+        <summary data-i18n="faq.q1">Is our data safe and private?</summary>
+        <p data-i18n="faq.a1">Yes. CargoFlow runs on your own infrastructure. All AI inference happens locally with self-hosted models — your shipment data never leaves your network.</p>
       </details>
       <details class="faq">
-        <summary>Do I need an internet connection for the AI features?</summary>
-        <p>No. The AI assistant, OCR extraction, predictions and reports run on local models via Ollama. When the AI service is offline, every feature falls back to a built-in rule-based mode.</p>
+        <summary data-i18n="faq.q2">Do I need an internet connection for the AI features?</summary>
+        <p data-i18n="faq.a2">No. The AI assistant, OCR extraction, predictions and reports run on local models. When the AI service is offline, every feature falls back to a built-in rule-based mode.</p>
       </details>
       <details class="faq">
-        <summary>Can I track both imports and exports?</summary>
-        <p>Absolutely. Both flows are first-class citizens with their own status pipelines, documents, activity logs and reports — plus AI assistance on both.</p>
+        <summary data-i18n="faq.q3">Can I track both imports and exports?</summary>
+        <p data-i18n="faq.a3">Absolutely. Both flows are first-class citizens with their own status pipelines, documents, activity logs and reports — plus AI assistance on both.</p>
       </details>
       <details class="faq">
-        <summary>Can we use our own trucks or outsource to vendors?</summary>
-        <p>Both. Assign internal trucks, trailers and drivers directly, or mark a shipment as outsourced and link it to an approved vendor.</p>
+        <summary data-i18n="faq.q4">Can we use our own trucks or outsource to vendors?</summary>
+        <p data-i18n="faq.a4">Both. Assign internal trucks, trailers and drivers directly, or mark a shipment as outsourced and link it to an approved vendor.</p>
       </details>
       <details class="faq">
-        <summary>Is there a trial period?</summary>
-        <p>Yes — every plan starts with a 14-day free trial. No credit card required, and a guided onboarding call is included.</p>
+        <summary data-i18n="faq.q5">Is there a trial period?</summary>
+        <p data-i18n="faq.a5">Yes — every plan starts with a 14-day free trial. No credit card required, and a guided onboarding call is included.</p>
       </details>
     </div>
   </div>
@@ -626,10 +641,10 @@
 <!-- ===== CTA ===== -->
 <section class="cta">
   <div class="container">
-    <h2>Ready to take your operations to the next level?</h2>
-    <p>Book a live demo and see how CargoFlow turns shipping chaos into a clear, trackable pipeline.</p>
-    <a href="#pricing" class="btn btn-white">Request a demo</a>
-    <a href="#faq" class="btn btn-ghost-light">Talk to sales</a>
+    <h2 data-i18n="cta.title">Ready to take your operations to the next level?</h2>
+    <p data-i18n="cta.text">Book a live demo and see how CargoFlow turns shipping chaos into a clear, trackable pipeline.</p>
+    <a href="#pricing" class="btn btn-white" data-i18n="hero.demo">Request a demo</a>
+    <a href="#faq" class="btn btn-ghost-light" data-i18n="pricing.btnSales">Talk to sales</a>
   </div>
 </section>
 
@@ -642,62 +657,536 @@
           <span class="brand-mark">C</span>
           <span>CargoFlow</span>
         </a>
-        <p>The import &amp; export management platform with a built-in AI copilot — built for freight forwarders, agents and 3PL operators.</p>
+        <p data-i18n="footer.tagline">The import &amp; export management platform with a built-in AI copilot — built for freight forwarders, agents and 3PL operators.</p>
       </div>
       <div>
-        <h5>Product</h5>
-        <a href="#features">Features</a>
-        <a href="#workflow">Workflow</a>
-        <a href="#ai">AI capabilities</a>
-        <a href="#pricing">Pricing</a>
+        <h5 data-i18n="footer.product">Product</h5>
+        <a href="#features" data-i18n="nav.features">Features</a>
+        <a href="#workflow" data-i18n="nav.workflow">Workflow</a>
+        <a href="#ai" data-i18n="footer.aiCap">AI capabilities</a>
+        <a href="#pricing" data-i18n="nav.pricing">Pricing</a>
       </div>
       <div>
-        <h5>Company</h5>
-        <a href="#">About us</a>
-        <a href="#">Careers</a>
-        <a href="#">Contact</a>
-        <a href="#">Privacy policy</a>
+        <h5 data-i18n="footer.company">Company</h5>
+        <a href="#" data-i18n="footer.about">About us</a>
+        <a href="#" data-i18n="footer.careers">Careers</a>
+        <a href="#" data-i18n="footer.contact">Contact</a>
+        <a href="#" data-i18n="footer.privacy">Privacy policy</a>
       </div>
       <div>
-        <h5>Get in touch</h5>
+        <h5 data-i18n="footer.touch">Get in touch</h5>
         <a href="mailto:sales@cargoflow.app">sales@cargoflow.app</a>
-        <a href="#">Book a demo</a>
-        <a href="#">Documentation</a>
+        <a href="#" data-i18n="nav.demo">Book a demo</a>
+        <a href="#" data-i18n="footer.docs">Documentation</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2026 CargoFlow ERP. All rights reserved.</span>
-      <span>CargoFlow ERP · Import &amp; Export Management System</span>
+      <span data-i18n="footer.rights">© 2026 CargoFlow ERP. All rights reserved.</span>
+      <span data-i18n="footer.tag">CargoFlow ERP · Import &amp; Export Management System</span>
     </div>
   </div>
 </footer>
 
 <script>
-  // Workflow tabs
-  const FLOWS = {
-    import: [
-      ["Booking received", "Container, vessel, ETA and BL captured"],
-      ["Approval & team", "Approve the job and assign operations team"],
-      ["License & permits", "Apply license and submit customs permit"],
-      ["Truck assignment", "Internal truck or outsourced to vendor"],
-      ["Vessel arrival", "Record ATA at port of discharge"],
-      ["Customs clearance", "Inspection, duties and release"],
-      ["Delivery", "Pick up, deliver and confirm unloading"],
-      ["Completion", "Return container and close the job"]
-    ],
-    export: [
-      ["Outbound booking", "Container, vessel, ETD and BL captured"],
-      ["Approval & team", "Approve the job and assign operations team"],
-      ["License & permits", "Apply export license and customs permit"],
-      ["Empty pickup", "Pick up the empty container from depot"],
-      ["Stuffing", "Confirm cargo stuffing at shipper"],
-      ["Gate-in & EIR", "Record port gate-in with EIR number"],
-      ["Vessel departure", "Record ATD of the outbound vessel"],
-      ["Clearance & close", "Export clearance then close the job"]
-    ]
+  // ===== Internationalization =====
+  const I18N = {
+    en: {
+      meta: {
+        title: "CargoFlow ERP — Import & Export Management Software",
+        description: "CargoFlow ERP is an all-in-one import/export logistics management platform with AI-powered assistants, full shipment lifecycle tracking, fleet management, and invoicing."
+      },
+      "nav.features": "Features",
+      "nav.workflow": "Workflow",
+      "nav.ai": "AI",
+      "nav.pricing": "Pricing",
+      "nav.faq": "FAQ",
+      "nav.demo": "Book a demo",
+      "nav.getStarted": "Get started",
+      "hero.eyebrow": "Now with built-in AI assistant",
+      "hero.title": "Run your entire import &amp; <em>export</em> operation on one platform",
+      "hero.lead": "CargoFlow ERP takes shipments from booking to closure — import and export — with fleet management, invoicing, documents, and an AI copilot that predicts delays, reads your shipping documents, and answers questions about your live operations.",
+      "hero.demo": "Request a demo",
+      "hero.exploreAI": "Explore the AI features",
+      "hero.proof": "<b>Trusted by freight forwarders</b> handling thousands of containers",
+      "hero.activeJobs": "Active jobs",
+      "hero.trucksRoad": "Trucks on road",
+      "hero.delayedAlerts": "Delayed alerts",
+      "hero.t1": "Booking received &amp; approved",
+      "hero.t2": "Customs permit submitted",
+      "hero.t3": "Truck assigned · outsource",
+      "hero.t4": "Vessel arrival pending",
+      "logo.label": "BUILT FOR FORWARDERS, AGENTS &amp; 3PL OPERATORS",
+      "feat.kicker": "Everything you need",
+      "feat.title": "One platform for the whole shipment lifecycle",
+      "feat.sub": "Stop juggling spreadsheets and WhatsApp. CargoFlow unifies every module your operations team touches daily.",
+      "feat.import.title": "Import Management <span class=\"tag\">CORE</span>",
+      "feat.import.text": "Full import workflow: booking receipt → approval → license &amp; permits → trucking → vessel arrival → customs clearance → delivery → container return → closure.",
+      "feat.export.title": "Export Management <span class=\"tag\">NEW</span>",
+      "feat.export.text": "Outbound lifecycle with empty pickup, stuffing, port gate-in &amp; EIR, vessel departure, export clearance and closure — mirrored to your import process.",
+      "feat.fleet.title": "Fleet Management",
+      "feat.fleet.text": "Trucks, trailers and drivers with full document expiry tracking (IC, license), availability status and one-click assignment — internal or outsourced to vendors.",
+      "feat.invoice.title": "Invoicing &amp; Billing",
+      "feat.invoice.text": "Per-job invoices with line items, COA mapping, tax calculation, and status workflow. Link revenue straight to the shipment.",
+      "feat.doc.title": "Documents &amp; Templates",
+      "feat.doc.text": "Attach BLs, packing lists and permits per job. Reuse shipment templates to book routine cargo in seconds.",
+      "feat.master.title": "Master Data &amp; Settings",
+      "feat.master.text": "Centralize customers, vendors, locations, items/services and company settings with credit terms and COA codes.",
+      "feat.search.title": "Search &amp; Alerts",
+      "feat.search.text": "Global search across jobs, trucks, customers and vendors. Real-time alerts for past ETA/ETD and expiring driver documents.",
+      "feat.roles.title": "Roles &amp; Approvals",
+      "feat.roles.text": "JWT security with admin, manager and staff roles. Approvals, rejections and destructive actions are gated by role.",
+      "feat.reports.title": "Reports &amp; Dashboard",
+      "feat.reports.text": "Live KPI dashboard, calendar view, printable job cards and an AI-generated weekly operations report.",
+      "flow.kicker": "How it works",
+      "flow.title": "A guided workflow, end to end",
+      "flow.sub": "Every shipment moves through a clearly defined pipeline. Teams always know what's next — and what's blocking progress.",
+      "flow.tabImport": "Import flow",
+      "flow.tabExport": "Export flow",
+      "ai.kicker": "Built-in AI powered",
+      "ai.title": "Your AI copilot for logistics operations",
+      "ai.sub": "A private, self-hosted AI that lives with your data — no external APIs, fully under your control.",
+      "ai.cardTitle": "CargoFlow AI Assistant",
+      "ai.cardText": "Ask anything in plain language and get answers from your live operations. Works even when the AI engine is offline.",
+      "ai.q1": "Which jobs are delayed this week?",
+      "ai.a1": "3 import jobs are past ETA and 1 export job is past ETD. The longest delay is IMP-0821 at 6 days on vessel \"MSC ALTAIR\".",
+      "ai.q2": "How many trucks are available today?",
+      "ai.a2": "8 of 12 trucks are available, with 4 assigned to active shipments.",
+      "ai.badge": "● AI ONLINE",
+      "ai.ocrTitle": "Document OCR extraction",
+      "ai.ocrText": "Upload a PDF or photo of a BL and the vision model extracts container, vessel, dates and parties — then apply it to the job in one click.",
+      "ai.delayTitle": "Delay &amp; ETA prediction",
+      "ai.delayText": "Historical patterns turn into predicted arrival/departure dates with a delay-risk score and confidence level.",
+      "ai.reportTitle": "Weekly AI reports",
+      "ai.reportText": "An auto-generated narrative of your week — new jobs, revenue, bottlenecks and recommended actions.",
+      "ai.assistTitle": "Smart job assist",
+      "ai.assistText": "Detects missing fields, stuck jobs, missed ETAs and surfaces the exact next step to keep shipments moving.",
+      "stats.s1": "Modular services",
+      "stats.s2": "API endpoints",
+      "stats.s3": "Self-hosted AI",
+      "stats.s4": "External data required",
+      "pricing.kicker": "Pricing",
+      "pricing.title": "Simple plans that scale with you",
+      "pricing.sub": "From a single freight desk to a full multi-branch operations team.",
+      "pricing.starter.name": "Starter",
+      "pricing.starter.price": "$99<small>/month</small>",
+      "pricing.starter.desc": "For small forwarders getting off spreadsheets.",
+      "pricing.starter.f1": "Up to 5 users",
+      "pricing.starter.f2": "Import &amp; export workflows",
+      "pricing.starter.f3": "Fleet management",
+      "pricing.starter.f4": "Master data (customers, vendors)",
+      "pricing.starter.f5": "Email support",
+      "pricing.btnTrial": "Start free trial",
+      "pricing.business.pop": "MOST POPULAR",
+      "pricing.business.name": "Business",
+      "pricing.business.price": "$249<small>/month</small>",
+      "pricing.business.desc": "For growing teams that need the full picture.",
+      "pricing.business.f1": "Up to 25 users",
+      "pricing.business.f2": "Everything in Starter",
+      "pricing.business.f3": "Invoicing &amp; billing",
+      "pricing.business.f4": "Documents &amp; templates",
+      "pricing.business.f5": "AI assistant, reports &amp; predictions",
+      "pricing.business.f6": "Priority support",
+      "pricing.enterprise.name": "Enterprise",
+      "pricing.enterprise.price": "Custom",
+      "pricing.enterprise.desc": "For multi-branch operators with specific needs.",
+      "pricing.enterprise.f1": "Unlimited users",
+      "pricing.enterprise.f2": "Everything in Business",
+      "pricing.enterprise.f3": "On-premise / private-cloud hosting",
+      "pricing.enterprise.f4": "Custom integrations &amp; workflows",
+      "pricing.enterprise.f5": "Dedicated success manager",
+      "pricing.btnSales": "Talk to sales",
+      "testi.kicker": "Testimonials",
+      "testi.title": "Loved by operations teams",
+      "testi.t1.text": "\"We closed the loop on import and export in one system. The AI copilot reads our BLs and predicts delays before our customers even ask.\"",
+      "testi.t1.role": "Operations Manager, Forwarder Co.",
+      "testi.t2.text": "\"Driver document expiry alerts alone save us from port fines. The workflow approvals keep our team honest and our managers informed.\"",
+      "testi.t2.role": "Head of Trucking, Pacific Freight",
+      "testi.t3.text": "\"The AI weekly report is like a free consultant. It tells us where shipments are stuck so we can act — not guess.\"",
+      "testi.t3.role": "Managing Director, Mekong Logistics",
+      "faq.kicker": "FAQ",
+      "faq.title": "Frequently asked questions",
+      "faq.q1": "Is our data safe and private?",
+      "faq.a1": "Yes. CargoFlow runs on your own infrastructure. All AI inference happens locally with self-hosted models — your shipment data never leaves your network.",
+      "faq.q2": "Do I need an internet connection for the AI features?",
+      "faq.a2": "No. The AI assistant, OCR extraction, predictions and reports run on local models. When the AI service is offline, every feature falls back to a built-in rule-based mode.",
+      "faq.q3": "Can I track both imports and exports?",
+      "faq.a3": "Absolutely. Both flows are first-class citizens with their own status pipelines, documents, activity logs and reports — plus AI assistance on both.",
+      "faq.q4": "Can we use our own trucks or outsource to vendors?",
+      "faq.a4": "Both. Assign internal trucks, trailers and drivers directly, or mark a shipment as outsourced and link it to an approved vendor.",
+      "faq.q5": "Is there a trial period?",
+      "faq.a5": "Yes — every plan starts with a 14-day free trial. No credit card required, and a guided onboarding call is included.",
+      "cta.title": "Ready to take your operations to the next level?",
+      "cta.text": "Book a live demo and see how CargoFlow turns shipping chaos into a clear, trackable pipeline.",
+      "footer.tagline": "The import &amp; export management platform with a built-in AI copilot — built for freight forwarders, agents and 3PL operators.",
+      "footer.product": "Product",
+      "footer.aiCap": "AI capabilities",
+      "footer.company": "Company",
+      "footer.about": "About us",
+      "footer.careers": "Careers",
+      "footer.contact": "Contact",
+      "footer.privacy": "Privacy policy",
+      "footer.touch": "Get in touch",
+      "footer.docs": "Documentation",
+      "footer.rights": "© 2026 CargoFlow ERP. All rights reserved.",
+      "footer.tag": "CargoFlow ERP · Import &amp; Export Management System"
+    },
+    km: {
+      meta: {
+        title: "CargoFlow ERP — កម្មវិធីគ្រប់គ្រងការនាំចូល និងនាំចេញ",
+        description: "CargoFlow ERP ជាវេទិកាគ្រប់គ្រងភស្តុភារ និងនាំចូល/នាំចេញរួមគ្នាតែមួយ ជាមួយជំនួយការ AI, ការតាមដានវដ្តជីវិតទំនិញពេញលេញ, ការគ្រប់គ្រងកងនាវា និងការចេញវិក្កយបត្រ។"
+      },
+      "nav.features": "មុខងារ",
+      "nav.workflow": "លំហូរការងារ",
+      "nav.ai": "AI",
+      "nav.pricing": "តម្លៃ",
+      "nav.faq": "សំណួរពេញនិយម",
+      "nav.demo": "កក់ការបង្ហាញ",
+      "nav.getStarted": "ចាប់ផ្តើម",
+      "hero.eyebrow": "ឥឡូវនេះមានជំនួយការ AI រួមបញ្ចូល",
+      "hero.title": "ដំណើរការការនាំចូល និង <em>នាំចេញ</em> ទាំងមូលរបស់អ្នកនៅលើវេទិកាតែមួយ",
+      "hero.lead": "CargoFlow ERP នាំទំនិញពីការកក់ រហូតដល់បិទបញ្ចប់ — ទាំងនាំចូល និងនាំចេញ — ជាមួយការគ្រប់គ្រងកងនាវា, វិក្កយបត្រ, ឯកសារ និងជំនួយការ AI ដែលទស្សន៍ទាយការពន្យាពេល, អានឯកសារដឹកជញ្ជូនរបស់អ្នក និងឆ្លើយសំណួរអំពីប្រតិបត្តិការផ្ទាល់របស់អ្នក។",
+      "hero.demo": "ស្នើសុំការបង្ហាញ",
+      "hero.exploreAI": "ស្វែងយល់ពីមុខងារ AI",
+      "hero.proof": "<b>ជឿទុកចិត្តដោយក្រុមហ៊ុនដឹកជញ្ជូន</b> ដែលគ្រប់គ្រងកុងតឺន័ររាប់ពាន់",
+      "hero.activeJobs": "ការងារសកម្ម",
+      "hero.trucksRoad": "រថយន្តកំពុងធ្វើដំណើរ",
+      "hero.delayedAlerts": "ការជូនដំណឹងពន្យាពេល",
+      "hero.t1": "បានទទួល និងអនុម័តការកក់",
+      "hero.t2": "បានដាក់ស្នើលិខិតអនុញ្ញាតគយ",
+      "hero.t3": "បានកំណត់រថយន្ត · ជួលក្រៅ",
+      "hero.t4": "កំពុងរង់ចាំការមកដល់របស់កប៉ាល់",
+      "logo.label": "បង្កើតសម្រាប់ក្រុមហ៊ុនដឹកជញ្ជូន, ភ្នាក់ងារ និងប្រតិបត្តិករ 3PL",
+      "feat.kicker": "អ្វីគ្រប់យ៉ាងដែលអ្នកត្រូវការ",
+      "feat.title": "វេទិកាតែមួយសម្រាប់វដ្តជីវិតទំនិញទាំងមូល",
+      "feat.sub": "ឈប់ប្រើសៀវភៅបញ្ជី និង WhatsApp ដ៏ច្របូកច្របល់។ CargoFlow បង្រួបបង្រួមគ្រប់ម៉ូឌុលដែលក្រុមប្រតិបត្តិការរបស់អ្នកប្រើប្រចាំថ្ងៃ។",
+      "feat.import.title": "ការគ្រប់គ្រងការនាំចូល <span class=\"tag\">CORE</span>",
+      "feat.import.text": "លំហូរនាំចូលពេញលេញ៖ ការទទួលកក់ → ការអនុម័ត → អាជ្ញាប័ណ្ណ និងលិខិតអនុញ្ញាត → ការដឹកជញ្ជូន → កប៉ាល់មកដល់ → ការបោសសំអាតគយ → ការដឹកជញ្ជូន → ការប្រគល់កុងតឺន័រ → បិទបញ្ចប់។",
+      "feat.export.title": "ការគ្រប់គ្រងការនាំចេញ <span class=\"tag\">ថ្មី</span>",
+      "feat.export.text": "វដ្តជីវិតនាំចេញ ជាមួយការយកកុងតឺន័រទទេ, ការដាក់ទំនិញ, ការចូលកំពង់ផែ &amp; EIR, ការចេញរបស់កប៉ាល់, ការបោសសំអាតនាំចេញ និងការបិទបញ្ចប់ — ឆ្លុះបញ្ចាំងពីដំណើរការនាំចូលរបស់អ្នក។",
+      "feat.fleet.title": "ការគ្រប់គ្រងកងនាវា",
+      "feat.fleet.text": "រថយន្ត, រ៉ឺម៉ក និងអ្នកបើកបរ ជាមួយការតាមដានផុតកំណត់ឯកសារពេញលេញ (អត្តសញ្ញាណប័ណ្ណ, អាជ្ញាប័ណ្ណ), ស្ថានភាពភាពអាចប្រើបាន និងការកំណត់ចុចតែម្តង — ទាំងផ្ទាល់ ឬជួលក្រុមហ៊ុនក្រៅ។",
+      "feat.invoice.title": "វិក្កយបត្រ និងការចេញវិក្កយបត្រ",
+      "feat.invoice.text": "វិក្កយបត្រក្នុងមួយការងារ ជាមួយបន្ទាត់ទំនិញ, ការភ្ជាប់ COA, ការគណនាពន្ធ និងលំហូរស្ថានភាព។ ភ្ជាប់ប្រាក់ចំណូលផ្ទាល់ទៅការដឹកជញ្ជូន។",
+      "feat.doc.title": "ឯកសារ និងគំរូ",
+      "feat.doc.text": "ភ្ជាប់ BL, បញ្ជីការវេចខ្ចប់ និងលិខិតអនុញ្ញាតក្នុងមួយការងារ។ ប្រើគំរូដឹកជញ្ជូនឡើងវិញ ដើម្បីកក់ទំនិញធម្មតាក្នុងរយៈពេលវិនាទី។",
+      "feat.master.title": "ទិន្នន័យមេ និងការកំណត់",
+      "feat.master.text": "ប្រមូលផ្តុំអតិថិជន, អ្នកផ្គត់ផ្គង់, ទីតាំង, ទំនិញ/សេវាកម្ម និងការកំណត់ក្រុមហ៊ុន ជាមួយលក្ខខណ្ឌឥណទាន និងលេខកូដ COA។",
+      "feat.search.title": "ស្វែងរក និងការជូនដំណឹង",
+      "feat.search.text": "ស្វែងរកទូទាំងប្រព័ន្ធលើការងារ, រថយន្ត, អតិថិជន និងអ្នកផ្គត់ផ្គង់។ ការជូនដំណឹងពេលជាក់ស្តែងសម្រាប់ ETA/ETD ហួសកំណត់ និងឯកសារអ្នកបើកបរដែលផុតកំណត់។",
+      "feat.roles.title": "តួនាទី និងការអនុម័ត",
+      "feat.roles.text": "សុវត្ថិភាព JWT ជាមួយតួនាទីអ្នកគ្រប់គ្រង, អ្នកគ្រប់គ្រងផ្នែក និងបុគ្គលិក។ ការអនុម័ត, ការបដិសេធ និងសកម្មភាពបំផ្លិចបំផ្លាញត្រូវបានដាក់កំហិតតាមតួនាទី។",
+      "feat.reports.title": "របាយការណ៍ និងផ្ទាំងគ្រប់គ្រង",
+      "feat.reports.text": "ផ្ទាំង KPI ផ្ទាល់, ទិដ្ឋភាពប្រតិទិន, ប័ណ្ណការងារដែលអាចបោះពុម្ព និងរបាយការណ៍ប្រតិបត្តិការប្រចាំសប្តាហ៍ដែលបង្កើតដោយ AI។",
+      "flow.kicker": "របៀបដំណើរការ",
+      "flow.title": "លំហូរការងារណែនាំ ពីដើមដល់ចប់",
+      "flow.sub": "រាល់ការដឹកជញ្ជូនឆ្លងកាត់លំហូរច្បាស់លាស់។ ក្រុមការងារតែងតែដឹងពីជំហានបន្ទាប់ — និងអ្វីដែលកំពុងរារាំងវឌ្ឍនភាព។",
+      "flow.tabImport": "លំហូរនាំចូល",
+      "flow.tabExport": "លំហូរនាំចេញ",
+      "ai.kicker": "ដំណើរការដោយ AI រួមបញ្ចូល",
+      "ai.title": "ជំនួយការ AI របស់អ្នកសម្រាប់ប្រតិបត្តិការភស្តុភារ",
+      "ai.sub": "AI ឯកជន ប្រើប្រាស់ក្នុងផ្ទះ ដែលរស់នៅជាមួយទិន្នន័យរបស់អ្នក — គ្មាន API ខាងក្រៅ ស្ថិតក្រោមការគ្រប់គ្រងរបស់អ្នកទាំងស្រុង។",
+      "ai.cardTitle": "ជំនួយការ CargoFlow AI",
+      "ai.cardText": "សួរអ្វីក៏បានជាភាសាធម្មតា ហើយទទួលចម្លើយពីប្រតិបត្តិការផ្ទាល់របស់អ្នក។ នៅតែដំណើរការទោះបី AI មិនដំណើរការក៏ដោយ។",
+      "ai.q1": "តើការងារណាខ្លះពន្យាពេលនៅសប្តាហ៍នេះ?",
+      "ai.a1": "ការងារនាំចូល 3 លើស ETA និងការងារនាំចេញ 1 លើស ETD។ ការពន្យាពេលយូរបំផុតគឺ IMP-0821 រយៈពេល 6 ថ្ងៃ នៅលើកប៉ាល់ \"MSC ALTAIR\"។",
+      "ai.q2": "តើរថយន្តប៉ុន្មានគ្រឿងអាចប្រើបាននៅថ្ងៃនេះ?",
+      "ai.a2": "រថយន្ត 8 ក្នុងចំណោម 12 អាចប្រើបាន ដោយ 4 ត្រូវបានកំណត់ទៅការដឹកជញ្ជូនសកម្ម។",
+      "ai.badge": "● AI ដំណើរការ",
+      "ai.ocrTitle": "ការទាញយកឯកសារ OCR",
+      "ai.ocrText": "ផ្ទុក PDF ឬរូបថត BL ហើយគំរូចក្ខុវិស័យទាញយកកុងតឺន័រ, កប៉ាល់, កាលបរិច្ឆេទ និងភាគី — រួចអនុវត្តទៅការងារក្នុងការចុចម្តង។",
+      "ai.delayTitle": "ការទស្សន៍ទាយការពន្យាពេល &amp; ETA",
+      "ai.delayText": "លំនាំប្រវត្តិសាស្ត្រប្រែក្លាយទៅជាកាលបរិច្ឆេទមកដល់/ចេញដំណើរដែលបានទស្សន៍ទាយ ជាមួយពិន្ទុហានិភ័យពន្យាពេល និងកម្រិតភាពជឿជាក់។",
+      "ai.reportTitle": "របាយការណ៍ AI ប្រចាំសប្តាហ៍",
+      "ai.reportText": "រឿងរ៉ាវដែលបង្កើតដោយស្វ័យប្រវត្តិនៃសប្តាហ៍របស់អ្នក — ការងារថ្មី, ចំណូល, ឧបសគ្គ និងសកម្មភាពដែលបានណែនាំ។",
+      "ai.assistTitle": "ជំនួយការងារឆ្លាតវៃ",
+      "ai.assistText": "រកឃើញវាលដែលបាត់, ការងារជាប់គាំង, ETA ដែលខកខាន និងបង្ហាញជំហានបន្ទាប់ពិតប្រាកដ ដើម្បីរក្សាទំនិញឱ្យបន្តដំណើរ។",
+      "stats.s1": "សេវាកម្មម៉ូឌុល",
+      "stats.s2": "ចំណុច API",
+      "stats.s3": "AI ប្រើប្រាស់ក្នុងផ្ទះ",
+      "stats.s4": "ទិន្នន័យខាងក្រៅដែលត្រូវការ",
+      "pricing.kicker": "តម្លៃ",
+      "pricing.title": "ផែនការសាមញ្ញដែលពង្រីកតាមអ្នក",
+      "pricing.sub": "ពីតុដឹកជញ្ជូនតែមួយ រហូតដល់ក្រុមប្រតិបត្តិការពហុសាខាពេញលេញ។",
+      "pricing.starter.name": "ចាប់ផ្តើម",
+      "pricing.starter.price": "$99<small>/ខែ</small>",
+      "pricing.starter.desc": "សម្រាប់ក្រុមហ៊ុនដឹកជញ្ជូនតូចដែលចាកចេញពីសៀវភៅបញ្ជី។",
+      "pricing.starter.f1": "អ្នកប្រើរហូតដល់ 5 នាក់",
+      "pricing.starter.f2": "លំហូរនាំចូល និងនាំចេញ",
+      "pricing.starter.f3": "ការគ្រប់គ្រងកងនាវា",
+      "pricing.starter.f4": "ទិន្នន័យមេ (អតិថិជន, អ្នកផ្គត់ផ្គង់)",
+      "pricing.starter.f5": "ការគាំទ្រតាមអ៊ីមែល",
+      "pricing.btnTrial": "ចាប់ផ្តើមសាកល្បងឥតគិតថ្លៃ",
+      "pricing.business.pop": "ពេញនិយមបំផុត",
+      "pricing.business.name": "អាជីវកម្ម",
+      "pricing.business.price": "$249<small>/ខែ</small>",
+      "pricing.business.desc": "សម្រាប់ក្រុមកំពុងរីកចម្រើនដែលត្រូវការរូបភាពពេញលេញ។",
+      "pricing.business.f1": "អ្នកប្រើរហូតដល់ 25 នាក់",
+      "pricing.business.f2": "អ្វីៗទាំងអស់ក្នុងផែនការចាប់ផ្តើម",
+      "pricing.business.f3": "វិក្កយបត្រ និងការចេញវិក្កយបត្រ",
+      "pricing.business.f4": "ឯកសារ និងគំរូ",
+      "pricing.business.f5": "ជំនួយការ AI, របាយការណ៍ និងការទស្សន៍ទាយ",
+      "pricing.business.f6": "ការគាំទ្រអាទិភាព",
+      "pricing.enterprise.name": "សហគ្រាស",
+      "pricing.enterprise.price": "ផ្ទាល់ខ្លួន",
+      "pricing.enterprise.desc": "សម្រាប់ប្រតិបត្តិករពហុសាខាដែលមានតម្រូវការជាក់លាក់។",
+      "pricing.enterprise.f1": "អ្នកប្រើគ្មានដែនកំណត់",
+      "pricing.enterprise.f2": "អ្វីៗទាំងអស់ក្នុងផែនការអាជីវកម្ម",
+      "pricing.enterprise.f3": "ការដាក់ស្វ័យប្រវត្តិ On-premise / ពពកឯកជន",
+      "pricing.enterprise.f4": "ការរួមបញ្ចូល និងលំហូរការងារផ្ទាល់ខ្លួន",
+      "pricing.enterprise.f5": "អ្នកគ្រប់គ្រងជោគជ័យអតិថិជនផ្ទាល់",
+      "pricing.btnSales": "ពិភាក្សាជាមួយផ្នែកលក់",
+      "testi.kicker": "ការវាយតម្លៃ",
+      "testi.title": "ស្រឡាញ់ដោយក្រុមប្រតិបត្តិការ",
+      "testi.t1.text": "\"យើងបានបិទរង្វង់នាំចូល និងនាំចេញក្នុងប្រព័ន្ធតែមួយ។ ជំនួយការ AI អាន BL របស់យើង ហើយទស្សន៍ទាយការពន្យាពេល មុនពេលអតិថិជនរបស់យើងសួរផង។\"",
+      "testi.t1.role": "អ្នកគ្រប់គ្រងប្រតិបត្តិការ, Forwarder Co.",
+      "testi.t2.text": "\"ការជូនដំណឹងផុតកំណត់ឯកសារអ្នកបើកបរតែម្នាក់ឯង ជួយយើងជៀសផុតពីការពិន័យកំពង់ផែ។ ការអនុម័តលំហូរការងារធ្វើឱ្យក្រុមរបស់យើងមានភាពស្មោះត្រង់ និងអ្នកគ្រប់គ្រងទទួលបានព័ត៌មាន។\"",
+      "testi.t2.role": "ប្រធានផ្នែកដឹកជញ្ជូន, Pacific Freight",
+      "testi.t3.text": "\"របាយការណ៍ប្រចាំសប្តាហ៍របស់ AI គឺដូចជាអ្នកប្រឹក្សាឥតគិតថ្លៃ។ វាប្រាប់យើងពីកន្លែងដែលទំនិញជាប់គាំង ដើម្បីយើងអាចធ្វើសកម្មភាព — មិនមែនស្មានទេ។\"",
+      "testi.t3.role": "នាយកគ្រប់គ្រង, Mekong Logistics",
+      "faq.kicker": "សំណួរពេញនិយម",
+      "faq.title": "សំណួរដែលគេសួរញឹកញាប់",
+      "faq.q1": "តើទិន្នន័យរបស់យើងមានសុវត្ថិភាព និងឯកជនដែរឬទេ?",
+      "faq.a1": "បាទ។ CargoFlow ដំណើរការលើហេដ្ឋារចនាសម្ព័ន្ធផ្ទាល់របស់អ្នក។ ការប៉ាន់ស្មាន AI ទាំងអស់កើតឡើងក្នុងតំបន់ជាមួយគំរូដែលប្រើប្រាស់ក្នុងផ្ទះ — ទិន្នន័យដឹកជញ្ជូនរបស់អ្នកមិនដែលចាកចេញពីបណ្តាញរបស់អ្នកឡើយ។",
+      "faq.q2": "តើខ្ញុំត្រូវការការតភ្ជាប់អ៊ីនធឺណិតសម្រាប់មុខងារ AI ដែរឬទេ?",
+      "faq.a2": "ទេ។ ជំនួយការ AI, ការទាញយក OCR, ការទស្សន៍ទាយ និងរបាយការណ៍ ដំណើរការលើគំរូក្នុងតំបន់។ នៅពេលសេវា AI មិនដំណើរការ រាល់មុខងារនឹងត្រលប់ទៅរបៀបផ្អែកលើច្បាប់ដែលភ្ជាប់មក។",
+      "faq.q3": "តើខ្ញុំអាចតាមដានទាំងការនាំចូល និងនាំចេញបានដែរឬទេ?",
+      "faq.a3": "ពិតជាមែន។ លំហូរទាំងពីរគឺជាធាតុសំខាន់ថ្នាក់ទីមួយ ជាមួយលំហូរស្ថានភាព, ឯកសារ, កំណត់ហេតុសកម្មភាព និងរបាយការណ៍ផ្ទាល់ខ្លួន — បូករួមទាំងជំនួយ AI ទាំងពីរ។",
+      "faq.q4": "តើយើងអាចប្រើរថយន្តផ្ទាល់ខ្លួន ឬជួលក្រុមហ៊ុនក្រៅបានទេ?",
+      "faq.a4": "ទាំងពីរ។ កំណត់រថយន្ត, រ៉ឺម៉ក និងអ្នកបើកបរផ្ទាល់ ឬសម្គាល់ការដឹកជញ្ជូនថាជួលក្រៅ ហើយភ្ជាប់ទៅអ្នកផ្គត់ផ្គង់ដែលបានអនុម័ត។",
+      "faq.q5": "តើមានរយៈពេលសាកល្បងដែរឬទេ?",
+      "faq.a5": "បាទ — គ្រប់ផែនការចាប់ផ្តើមជាមួយការសាកល្បងឥតគិតថ្លៃ 14 ថ្ងៃ។ មិនតម្រូវឱ្យមានកាតឥណទាន ហើយរួមបញ្ចូលការហៅណែនាំការប្រើប្រាស់។",
+      "cta.title": "ត្រៀមខ្លួនលើកកម្ពស់ប្រតិបត្តិការរបស់អ្នកហើយឬនៅ?",
+      "cta.text": "កក់ការបង្ហាញផ្ទាល់ ហើយមើលពីរបៀបដែល CargoFlow ប្រែក្លាយភាពច្របូកច្របល់នៃការដឹកជញ្ជូន ទៅជាលំហូរច្បាស់លាស់អាចតាមដានបាន។",
+      "footer.tagline": "វេទិកាគ្រប់គ្រងការនាំចូល និងនាំចេញ ជាមួយជំនួយការ AI ដែលភ្ជាប់មក — បង្កើតសម្រាប់ក្រុមហ៊ុនដឹកជញ្ជូន, ភ្នាក់ងារ និងប្រតិបត្តិករ 3PL។",
+      "footer.product": "ផលិតផល",
+      "footer.aiCap": "សមត្ថភាព AI",
+      "footer.company": "ក្រុមហ៊ុន",
+      "footer.about": "អំពីយើង",
+      "footer.careers": "អាជីពការងារ",
+      "footer.contact": "ទំនាក់ទំនង",
+      "footer.privacy": "គោលការណ៍ឯកជនភាព",
+      "footer.touch": "ទំនាក់ទំនង",
+      "footer.docs": "ឯកសារណែនាំ",
+      "footer.rights": "© 2026 CargoFlow ERP។ រក្សាសិទ្ធិគ្រប់យ៉ាង។",
+      "footer.tag": "CargoFlow ERP · ប្រព័ន្ធគ្រប់គ្រងការនាំចូល និងនាំចេញ"
+    },
+    zh: {
+      meta: {
+        title: "CargoFlow ERP — 进出口管理软件",
+        description: "CargoFlow ERP 是一体化的进出口物流管理平台，具备AI智能助手、完整货物生命周期跟踪、车队管理和发票功能。"
+      },
+      "nav.features": "功能",
+      "nav.workflow": "工作流程",
+      "nav.ai": "AI",
+      "nav.pricing": "定价",
+      "nav.faq": "常见问题",
+      "nav.demo": "预约演示",
+      "nav.getStarted": "立即开始",
+      "hero.eyebrow": "现在内置AI助手",
+      "hero.title": "在一个平台上运行您的全部 <em>进出口</em> 业务",
+      "hero.lead": "CargoFlow ERP 将货物从订舱到结案全程管理——包括进口和出口——涵盖车队管理、发票、文件以及能预测延误、读取您运输单据并回答您实时运营问题的AI副驾驶。",
+      "hero.demo": "申请演示",
+      "hero.exploreAI": "探索AI功能",
+      "hero.proof": "<b>深受货运代理信赖</b>，处理数千个集装箱",
+      "hero.activeJobs": "进行中的订单",
+      "hero.trucksRoad": "在途卡车",
+      "hero.delayedAlerts": "延误提醒",
+      "hero.t1": "已接收并批准订舱",
+      "hero.t2": "已提交海关许可",
+      "hero.t3": "已分配卡车·外包",
+      "hero.t4": "等待船舶到港",
+      "logo.label": "专为货运代理、代理及3PL运营商打造",
+      "feat.kicker": "您需要的一切",
+      "feat.title": "一个平台覆盖货物全生命周期",
+      "feat.sub": "告别杂乱的电子表格和WhatsApp。CargoFlow 统一您的运营团队每天使用的每个模块。",
+      "feat.import.title": "进口管理 <span class=\"tag\">核心</span>",
+      "feat.import.text": "完整的进口流程：订舱接收 → 审批 → 许可证与许可 → 陆运 → 船舶到港 → 清关 → 派送 → 归还集装箱 → 结案。",
+      "feat.export.title": "出口管理 <span class=\"tag\">新</span>",
+      "feat.export.text": "出口全生命周期：空箱提取、装箱、港口进闸与EIR、船舶离港、出口清关和结案——与进口流程对应。",
+      "feat.fleet.title": "车队管理",
+      "feat.fleet.text": "卡车、拖车和司机，全面跟踪证件到期（身份证、驾照）、可用状态和一键分配——内部或外包给供应商。",
+      "feat.invoice.title": "发票与计费",
+      "feat.invoice.text": "按订单开票，含明细行、COA映射、税费计算和状态流程。将收入直接关联到货物。",
+      "feat.doc.title": "文件与模板",
+      "feat.doc.text": "按订单附加提单、装箱单和许可。复用运输模板，几秒钟即可预订常规货物。",
+      "feat.master.title": "主数据与设置",
+      "feat.master.text": "集中管理客户、供应商、地点、商品/服务及公司设置，含信用条款和COA代码。",
+      "feat.search.title": "搜索与提醒",
+      "feat.search.text": "跨订单、卡车、客户和供应商全局搜索。针对已过ETA/ETD和即将过期的司机证件提供实时提醒。",
+      "feat.roles.title": "角色与审批",
+      "feat.roles.text": "JWT安全，包含管理员、经理和员工角色。审批、驳回和删除操作按角色限制。",
+      "feat.reports.title": "报表与仪表盘",
+      "feat.reports.text": "实时KPI仪表盘、日历视图、可打印订单卡片和AI生成的每周运营报告。",
+      "flow.kicker": "运作方式",
+      "flow.title": "端到端的引导式工作流程",
+      "flow.sub": "每批货物都经过清晰定义的流程管道。团队始终知道下一步——以及什么在阻碍进展。",
+      "flow.tabImport": "进口流程",
+      "flow.tabExport": "出口流程",
+      "ai.kicker": "内置AI驱动",
+      "ai.title": "您的物流运营AI副驾驶",
+      "ai.sub": "与您的数据共存的私有、自托管AI——无外部API，完全由您掌控。",
+      "ai.cardTitle": "CargoFlow AI助手",
+      "ai.cardText": "用自然语言提问，从您的实时运营中获取答案。即使AI引擎离线也能工作。",
+      "ai.q1": "这周哪些订单延误了？",
+      "ai.a1": "3个进口订单已过ETA，1个出口订单已过ETD。最长延误为IMP-0821，在\"MSC ALTAIR\"号船上延误6天。",
+      "ai.q2": "今天有多少辆卡车可用？",
+      "ai.a2": "12辆卡车中有8辆可用，其中4辆已分配给进行中的货物。",
+      "ai.badge": "● AI在线",
+      "ai.ocrTitle": "文档OCR提取",
+      "ai.ocrText": "上传提单的PDF或照片，视觉模型即可提取集装箱、船舶、日期和各方信息——一键应用到订单。",
+      "ai.delayTitle": "延误与ETA预测",
+      "ai.delayText": "历史模式转化为预测的到达/离港日期，并附有延误风险评分和置信度。",
+      "ai.reportTitle": "每周AI报告",
+      "ai.reportText": "自动生成的每周总结——新订单、收入、瓶颈和推荐行动。",
+      "ai.assistTitle": "智能订单辅助",
+      "ai.assistText": "检测缺失字段、卡住的订单、错过的ETA，并提示确切的下一步以保持货物流动。",
+      "stats.s1": "模块化服务",
+      "stats.s2": "API接口",
+      "stats.s3": "自托管AI",
+      "stats.s4": "需要外部数据",
+      "pricing.kicker": "定价",
+      "pricing.title": "随您发展的简单方案",
+      "pricing.sub": "从单一货运桌到完整的多分支运营团队。",
+      "pricing.starter.name": "入门版",
+      "pricing.starter.price": "$99<small>/月</small>",
+      "pricing.starter.desc": "适合脱离电子表格的小型货代。",
+      "pricing.starter.f1": "最多5个用户",
+      "pricing.starter.f2": "进出口工作流程",
+      "pricing.starter.f3": "车队管理",
+      "pricing.starter.f4": "主数据（客户、供应商）",
+      "pricing.starter.f5": "邮件支持",
+      "pricing.btnTrial": "开始免费试用",
+      "pricing.business.pop": "最受欢迎",
+      "pricing.business.name": "商业版",
+      "pricing.business.price": "$249<small>/月</small>",
+      "pricing.business.desc": "适合需要全面视图的成长型团队。",
+      "pricing.business.f1": "最多25个用户",
+      "pricing.business.f2": "入门版全部功能",
+      "pricing.business.f3": "发票与计费",
+      "pricing.business.f4": "文件与模板",
+      "pricing.business.f5": "AI助手、报表与预测",
+      "pricing.business.f6": "优先支持",
+      "pricing.enterprise.name": "企业版",
+      "pricing.enterprise.price": "定制",
+      "pricing.enterprise.desc": "适合有特定需求的多分支运营商。",
+      "pricing.enterprise.f1": "无限用户",
+      "pricing.enterprise.f2": "商业版全部功能",
+      "pricing.enterprise.f3": "本地部署/私有云托管",
+      "pricing.enterprise.f4": "自定义集成与工作流程",
+      "pricing.enterprise.f5": "专属客户成功经理",
+      "pricing.btnSales": "联系销售",
+      "testi.kicker": "客户评价",
+      "testi.title": "深受运营团队喜爱",
+      "testi.t1.text": "\"我们在一个系统中闭环了进出口。AI副驾驶读取我们的提单并在客户询问之前就预测延误。\"",
+      "testi.t1.role": "运营经理，Forwarder Co.",
+      "testi.t2.text": "\"仅司机证件到期提醒一项就让我们避免港口罚款。工作流审批让团队保持诚信，让经理了解情况。\"",
+      "testi.t2.role": "运输主管，Pacific Freight",
+      "testi.t3.text": "\"AI每周报告就像免费的顾问。它告诉我们货物卡在哪里，让我们采取行动——而不是猜测。\"",
+      "testi.t3.role": "总经理，Mekong Logistics",
+      "faq.kicker": "常见问题",
+      "faq.title": "常见问题解答",
+      "faq.q1": "我们的数据安全且私密吗？",
+      "faq.a1": "是的。CargoFlow运行在您自己的基础设施上。所有AI推理都在本地使用自托管模型完成——您的货物数据永远不会离开您的网络。",
+      "faq.q2": "使用AI功能需要联网吗？",
+      "faq.a2": "不需要。AI助手、OCR提取、预测和报告都在本地模型上运行。当AI服务离线时，每个功能都会回退到内置的基于规则的模式。",
+      "faq.q3": "我可以同时跟踪进口和出口吗？",
+      "faq.a3": "当然。两条流程都是一等公民，拥有各自的状态管道、文件、活动日志和报表——并提供AI辅助。",
+      "faq.q4": "我们可以用自己的卡车或外包给供应商吗？",
+      "faq.a4": "都可以。直接分配内部卡车、拖车和司机，或将货物标记为外包并关联到已批准的供应商。",
+      "faq.q5": "有试用期吗？",
+      "faq.a5": "是的——每个方案都从14天免费试用开始。无需信用卡，并包含引导式入门指导通话。",
+      "cta.title": "准备好将您的运营提升到新水平了吗？",
+      "cta.text": "预约现场演示，看看CargoFlow如何将运输混乱转变为清晰可追踪的流程管道。",
+      "footer.tagline": "内置AI副驾驶的进出口管理平台——专为货运代理、代理和3PL运营商打造。",
+      "footer.product": "产品",
+      "footer.aiCap": "AI能力",
+      "footer.company": "公司",
+      "footer.about": "关于我们",
+      "footer.careers": "招聘",
+      "footer.contact": "联系",
+      "footer.privacy": "隐私政策",
+      "footer.touch": "联系我们",
+      "footer.docs": "文档",
+      "footer.rights": "© 2026 CargoFlow ERP。保留所有权利。",
+      "footer.tag": "CargoFlow ERP · 进出口管理系统"
+    }
   };
+
+  // ===== Workflow tabs (language-aware) =====
+  const FLOWS = {
+    en: {
+      import: [
+        ["Booking received", "Container, vessel, ETA and BL captured"],
+        ["Approval & team", "Approve the job and assign operations team"],
+        ["License & permits", "Apply license and submit customs permit"],
+        ["Truck assignment", "Internal truck or outsourced to vendor"],
+        ["Vessel arrival", "Record ATA at port of discharge"],
+        ["Customs clearance", "Inspection, duties and release"],
+        ["Delivery", "Pick up, deliver and confirm unloading"],
+        ["Completion", "Return container and close the job"]
+      ],
+      export: [
+        ["Outbound booking", "Container, vessel, ETD and BL captured"],
+        ["Approval & team", "Approve the job and assign operations team"],
+        ["License & permits", "Apply export license and customs permit"],
+        ["Empty pickup", "Pick up the empty container from depot"],
+        ["Stuffing", "Confirm cargo stuffing at shipper"],
+        ["Gate-in & EIR", "Record port gate-in with EIR number"],
+        ["Vessel departure", "Record ATD of the outbound vessel"],
+        ["Clearance & close", "Export clearance then close the job"]
+      ]
+    },
+    km: {
+      import: [
+        ["បានទទួលការកក់", "បានកត់ត្រាកុងតឺន័រ, កប៉ាល់, ETA និង BL"],
+        ["ការអនុម័ត និងក្រុម", "អនុម័តការងារ និងកំណត់ក្រុមប្រតិបត្តិការ"],
+        ["អាជ្ញាប័ណ្ណ និងលិខិតអនុញ្ញាត", "ដាក់ពាក្យសុំអាជ្ញាប័ណ្ណ និងដាក់ស្នើលិខិតអនុញ្ញាតគយ"],
+        ["ការកំណត់រថយន្ត", "រថយន្តផ្ទាល់ ឬជួលក្រុមហ៊ុនក្រៅ"],
+        ["កប៉ាល់មកដល់", "កត់ត្រា ATA នៅកំពង់ផែប្រគល់ទំនិញ"],
+        ["ការបោសសំអាតគយ", "ការត្រួតពិនិត្យ, ពន្ធ និងការដោះលែង"],
+        ["ការដឹកជញ្ជូន", "យកទំនិញ, ដឹកជញ្ជូន និងបញ្ជាក់ការដកទំនិញ"],
+        ["បញ្ចប់", "ប្រគល់កុងតឺន័រ និងបិទការងារ"]
+      ],
+      export: [
+        ["ការកក់នាំចេញ", "បានកត់ត្រាកុងតឺន័រ, កប៉ាល់, ETD និង BL"],
+        ["ការអនុម័ត និងក្រុម", "អនុម័តការងារ និងកំណត់ក្រុមប្រតិបត្តិការ"],
+        ["អាជ្ញាប័ណ្ណ និងលិខិតអនុញ្ញាត", "ដាក់ពាក្យសុំអាជ្ញាប័ណ្ណនាំចេញ និងលិខិតអនុញ្ញាតគយ"],
+        ["ការយកកុងតឺន័រទទេ", "យកកុងតឺន័រទទេពីឃ្លាំង"],
+        ["ការដាក់ទំនិញ", "បញ្ជាក់ការដាក់ទំនិញនៅអ្នកផ្ញើ"],
+        ["ការចូលកំពង់ផែ &amp; EIR", "កត់ត្រាការចូលកំពង់ផែជាមួយលេខ EIR"],
+        ["ការចេញរបស់កប៉ាល់", "កត់ត្រា ATD នៃកប៉ាល់នាំចេញ"],
+        ["ការបោសសំអាត និងបិទ", "បោសសំអាតនាំចេញ រួចបិទការងារ"]
+      ]
+    },
+    zh: {
+      import: [
+        ["已接收订舱", "已记录集装箱、船舶、ETA和提单"],
+        ["审批与团队", "审批订单并指派运营团队"],
+        ["许可证与许可", "申请许可证并提交海关许可"],
+        ["卡车分配", "内部卡车或外包给供应商"],
+        ["船舶到港", "在卸货港记录实际到港时间"],
+        ["清关", "查验、缴税和放行"],
+        ["派送", "提货、派送并确认卸货"],
+        ["结案", "归还集装箱并关闭订单"]
+      ],
+      export: [
+        ["出口订舱", "已记录集装箱、船舶、ETD和提单"],
+        ["审批与团队", "审批订单并指派运营团队"],
+        ["许可证与许可", "申请出口许可证和海关许可"],
+        ["空箱提取", "从堆场提取空箱"],
+        ["装箱", "确认在发货人处装箱"],
+        ["进闸与EIR", "记录港口进闸及EIR编号"],
+        ["船舶离港", "记录出口船舶实际离港时间"],
+        ["清关与结案", "出口清关后关闭订单"]
+      ]
+    }
+  };
+
+  let currentLang = localStorage.getItem('cargoflow_lang') || 'en';
+  let activeFlow = 'import';
+
   function renderFlow(name) {
-    const steps = FLOWS[name];
+    const steps = (FLOWS[currentLang] && FLOWS[currentLang][name]) ? FLOWS[currentLang][name] : FLOWS.en[name];
     const el = document.getElementById('flow-steps');
     el.innerHTML = steps.map((s, i) => `
       <div class="flow-step">
@@ -707,14 +1196,36 @@
         <p>${s[1]}</p>
       </div>`).join('');
   }
+
+  function applyLang(lang) {
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    const dict = I18N[lang];
+    document.title = dict.meta.title;
+    document.querySelector('meta[name="description"]').setAttribute('content', dict.meta.description);
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const val = dict[el.dataset.i18n];
+      if (val !== undefined) el.innerHTML = val;
+    });
+    document.getElementById('lang-select').value = lang;
+    renderFlow(activeFlow);
+    localStorage.setItem('cargoflow_lang', lang);
+  }
+
   document.querySelectorAll('.flow-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.flow-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-      renderFlow(tab.dataset.flow);
+      activeFlow = tab.dataset.flow;
+      renderFlow(activeFlow);
     });
   });
-  renderFlow('import');
+
+  document.getElementById('lang-select').addEventListener('change', (e) => {
+    applyLang(e.target.value);
+  });
+
+  applyLang(currentLang);
 
   // Reveal on scroll
   const io = new IntersectionObserver((entries) => {
