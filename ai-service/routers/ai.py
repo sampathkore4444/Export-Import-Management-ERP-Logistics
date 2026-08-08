@@ -187,6 +187,61 @@ def build_context(message: str, token: str) -> dict:
         items = erp_client.fetch_items(token)
         ctx["items"] = {"total": len(items), "recent": summarize_list(items, ["item_code", "name", "unit"])}
 
+    if "invoices" in intents:
+        quotations = erp_client.fetch_quotations(token)
+        bills = erp_client.fetch_bills(token)
+        finance = erp_client.fetch_finance_analytics(token)
+        if quotations:
+            ctx["quotations"] = {"total": len(quotations), "recent": summarize_list(quotations, ["quote_number", "customer_name", "total", "status"])}
+        if bills:
+            ctx["bills"] = {"total": len(bills), "recent": summarize_list(bills, ["bill_number", "vendor_name", "total", "status"])}
+        if finance:
+            ctx["finance"] = {
+                "revenue_30d": finance.get("revenue_30d", 0),
+                "expenses_30d": finance.get("expenses_30d", 0),
+                "profit_30d": finance.get("profit_30d", 0),
+                "outstanding_invoices": finance.get("outstanding_invoices", 0),
+                "unpaid_bills": finance.get("unpaid_bills", 0),
+                "top_customers": summarize_list(finance.get("top_customers") or [], ["customer", "revenue", "profit"]),
+            }
+
+    if "containers" in intents:
+        containers = erp_client.fetch_containers(token)
+        in_transit = erp_client.fetch_containers_in_transit(token)
+        by_status = {}
+        for c in containers:
+            by_status[c.get("status", "UNKNOWN")] = by_status.get(c.get("status", "UNKNOWN"), 0) + 1
+        ctx["containers"] = {
+            "total": len(containers),
+            "in_transit": len(in_transit),
+            "by_status": by_status,
+            "recent": summarize_list(containers, ["container_number", "size", "status", "last_event_at"]),
+        }
+
+    if "air" in intents:
+        air_jobs = erp_client.fetch_air_jobs(token)
+        active = [a for a in air_jobs if a.get("status") not in ("CLOSED", "REJECTED")]
+        by_status = {}
+        for a in air_jobs:
+            by_status[a.get("status", "UNKNOWN")] = by_status.get(a.get("status", "UNKNOWN"), 0) + 1
+        ctx["air_jobs"] = {
+            "total": len(air_jobs),
+            "active": len(active),
+            "by_status": by_status,
+            "recent": summarize_list(air_jobs, ["job_number", "awb_number", "carrier", "origin", "destination", "status"]),
+        }
+
+    if "warehouse" in intents:
+        inventory = erp_client.fetch_inventory(token)
+        summary = erp_client.fetch_inventory_summary(token)
+        if inventory:
+            ctx["inventory"] = {
+                "total_items": len(inventory),
+                "recent": summarize_list(inventory, ["name", "sku", "quantity", "status"]),
+            }
+        if summary:
+            ctx["inventory_summary"] = summary
+
     return ctx
 
 
@@ -216,6 +271,18 @@ def fallback_answer(message: str, ctx: dict) -> str:
     inv = ctx.get("invoices")
     if inv:
         parts.append(f"{inv['outstanding']} of {inv['total']} invoices outstanding, total {inv['sum_total']}")
+    fin = ctx.get("finance")
+    if fin:
+        parts.append(f"30d finance: revenue {fin.get('revenue_30d')}, expenses {fin.get('expenses_30d')}, profit {fin.get('profit_30d')}, outstanding invoices {fin.get('outstanding_invoices')}")
+    cont = ctx.get("containers")
+    if cont:
+        parts.append(f"{cont['total']} containers ({cont['in_transit']} in transit)")
+    air = ctx.get("air_jobs")
+    if air:
+        parts.append(f"{air['total']} air jobs ({air['active']} active)")
+    wh = ctx.get("inventory_summary") or ctx.get("inventory")
+    if wh:
+        parts.append(f"inventory: {wh.get('total_items') if isinstance(wh, dict) else len(wh)} items, {wh.get('low_stock_items', 0)} low stock")
     if not parts:
         return "I could not load any data right now. Please try again."
     return "Live summary: " + "; ".join(parts) + "."
