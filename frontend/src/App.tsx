@@ -37,8 +37,8 @@ const isAdmin = (user: User | null) => user?.role === 'admin'
 
 const PLAN_FEATURES: Record<string, string[]> = {
   starter: ['import', 'export', 'fleet', 'master-data'],
-  business: ['import', 'export', 'fleet', 'master-data', 'invoicing', 'documents', 'templates', 'ai'],
-  enterprise: ['import', 'export', 'fleet', 'master-data', 'invoicing', 'documents', 'templates', 'ai'],
+  business: ['import', 'export', 'fleet', 'master-data', 'invoicing', 'documents', 'templates', 'ai', 'finance', 'containers', 'air', 'warehouse'],
+  enterprise: ['import', 'export', 'fleet', 'master-data', 'invoicing', 'documents', 'templates', 'ai', 'finance', 'containers', 'air', 'warehouse'],
 }
 const canUse = (user: User | null, feature: string) => !!user && (PLAN_FEATURES[user.plan] || []).includes(feature)
 const planLabel = (plan?: string) => plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : 'Starter'
@@ -186,6 +186,7 @@ function Login() {
 }
 
 function Dashboard() {
+  const { user } = useAuth()
   const [stats, setStats] = useState({ 
     pending: 0, 
     inProgress: 0, 
@@ -200,6 +201,10 @@ function Dashboard() {
   const [truckCount, setTruckCount] = useState(0)
   const [customerCount, setCustomerCount] = useState(0)
   const [vendorCount, setVendorCount] = useState(0)
+  const [exportCount, setExportCount] = useState(0)
+  const [finance, setFinance] = useState<any>(null)
+  const [containersInTransit, setContainersInTransit] = useState<any[]>([])
+  const [inventorySummary, setInventorySummary] = useState<any>(null)
 
   useEffect(() => {
     Promise.all([
@@ -224,6 +229,17 @@ function Dashboard() {
       setCustomerCount(customersRes.data.length)
       setVendorCount(vendorsRes.data.length)
     }).catch(() => {})
+
+    axios.get(`${API_BASE}/exports`).then(r => setExportCount(r.data.length)).catch(() => {})
+    if (canUse(user, 'finance')) {
+      axios.get(`${API_BASE}/finance/analytics`).then(r => setFinance(r.data)).catch(() => {})
+    }
+    if (canUse(user, 'containers')) {
+      axios.get(`${API_BASE}/containers/in-transit`).then(r => setContainersInTransit(r.data)).catch(() => {})
+    }
+    if (canUse(user, 'warehouse')) {
+      axios.get(`${API_BASE}/inventory/summary`).then(r => setInventorySummary(r.data)).catch(() => {})
+    }
   }, [])
 
   return (
@@ -278,6 +294,44 @@ function Dashboard() {
           <div className="stat-label">Vendors</div>
         </div>
       </div>
+
+      {(canUse(user, 'finance') || canUse(user, 'containers') || canUse(user, 'warehouse')) && (
+        <div className="grid grid-4 mt-4">
+          {canUse(user, 'finance') && (
+            <div className="stat-card">
+              <div className="stat-icon green">&#128176;</div>
+              <div className="stat-value">${(finance?.revenue_30d || 0).toLocaleString()}</div>
+              <div className="stat-label">Revenue (30d)</div>
+            </div>
+          )}
+          {canUse(user, 'finance') && (
+            <div className="stat-card">
+              <div className="stat-icon red">&#128200;</div>
+              <div className="stat-value">${(finance?.profit_30d || 0).toLocaleString()}</div>
+              <div className="stat-label">Profit (30d)</div>
+            </div>
+          )}
+          {canUse(user, 'containers') && (
+            <div className="stat-card">
+              <div className="stat-icon blue">&#128666;</div>
+              <div className="stat-value">{containersInTransit.length}</div>
+              <div className="stat-label">Containers In Transit</div>
+            </div>
+          )}
+          {canUse(user, 'warehouse') && (
+            <div className="stat-card">
+              <div className="stat-icon purple">&#128230;</div>
+              <div className="stat-value">{inventorySummary?.total_items || 0}</div>
+              <div className="stat-label">Inventory Items</div>
+            </div>
+          )}
+          <div className="stat-card">
+            <div className="stat-icon blue">&#9992;</div>
+            <div className="stat-value">{exportCount}</div>
+            <div className="stat-label">Export Jobs</div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-2 mt-6">
         <div className="card">
@@ -394,6 +448,38 @@ function Dashboard() {
             </div>
           )}
         </div>
+
+        {canUse(user, 'finance') && finance?.top_customers?.length > 0 && (
+          <div className="card">
+            <div className="card-header">
+              <span className="card-title">Customer Performance</span>
+            </div>
+            <div className="table-container">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Customer</th>
+                    <th>Revenue</th>
+                    <th>Cost</th>
+                    <th>Profit</th>
+                    <th>Invoices</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {finance.top_customers.map((c: any, i: number) => (
+                    <tr key={i}>
+                      <td>{c.customer}</td>
+                      <td>${Number(c.revenue || 0).toLocaleString()}</td>
+                      <td>${Number(c.cost || 0).toLocaleString()}</td>
+                      <td className={c.profit >= 0 ? 'text-success' : 'text-danger'}>${Number(c.profit || 0).toLocaleString()}</td>
+                      <td>{c.invoices}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -4407,6 +4493,38 @@ function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             </li>
           )}
+          {canUse(user, 'finance') && (
+            <li className="nav-item">
+              <Link to="/finance" className="nav-link">
+                <span className="nav-icon">&#128184;</span>
+                Finance
+              </Link>
+            </li>
+          )}
+          {canUse(user, 'containers') && (
+            <li className="nav-item">
+              <Link to="/containers" className="nav-link">
+                <span className="nav-icon">&#128666;</span>
+                Containers
+              </Link>
+            </li>
+          )}
+          {canUse(user, 'air') && (
+            <li className="nav-item">
+              <Link to="/air" className="nav-link">
+                <span className="nav-icon">&#9992;</span>
+                Air Jobs
+              </Link>
+            </li>
+          )}
+          {canUse(user, 'warehouse') && (
+            <li className="nav-item">
+              <Link to="/warehouses" className="nav-link">
+                <span className="nav-icon">&#128230;</span>
+                Warehouse
+              </Link>
+            </li>
+          )}
           <li className="nav-section">Fleet Management</li>
           <li className="nav-item">
             <Link to="/trucks" className="nav-link">
@@ -4813,6 +4931,936 @@ function AIReports() {
   )
 }
 
+function FinanceOverview() {
+  const { user } = useAuth()
+  const [analytics, setAnalytics] = useState<any>(null)
+  const [quotations, setQuotations] = useState<any[]>([])
+  const [bills, setBills] = useState<any[]>([])
+  const [invoices, setInvoices] = useState<any[]>([])
+  const [jobs, setJobs] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<'overview' | 'quotations' | 'bills' | 'payments'>('overview')
+  const [showQuoteForm, setShowQuoteForm] = useState(false)
+  const [showBillForm, setShowBillForm] = useState(false)
+  const [showPaymentFor, setShowPaymentFor] = useState<string | null>(null)
+  const [paymentAmount, setPaymentAmount] = useState('')
+  const paymentMethod = 'BANK_TRANSFER'
+  const [payments, setPayments] = useState<Record<string, any[]>>({})
+  const [quoteForm, setQuoteForm] = useState({ job_id: '', customer_name: '', tax_rate: '0', notes: '' })
+  const [quoteLines, setQuoteLines] = useState([{ description: '', quantity: '1', unit_price: '' }])
+  const [billForm, setBillForm] = useState({ job_id: '', vendor_name: '', tax_rate: '0', notes: '' })
+  const [billLines, setBillLines] = useState([{ description: '', quantity: '1', unit_price: '' }])
+
+  const load = () => {
+    setLoading(true)
+    Promise.all([
+      axios.get(`${API_BASE}/finance/analytics`).then(r => r.data).catch(() => null),
+      axios.get(`${API_BASE}/quotations`).then(r => r.data).catch(() => []),
+      axios.get(`${API_BASE}/bills`).then(r => r.data).catch(() => []),
+      axios.get(`${API_BASE}/invoices`).then(r => r.data).catch(() => []),
+      axios.get(`${API_BASE}/jobs`).then(r => r.data).catch(() => [])
+    ]).then(([a, q, b, i, j]) => {
+      setAnalytics(a)
+      setQuotations(q)
+      setBills(b)
+      setInvoices(i)
+      setJobs(j)
+    }).finally(() => setLoading(false))
+  }
+
+  useEffect(() => { load() }, [])
+
+  const createQuotation = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const validLines = quoteLines.filter(l => l.description.trim())
+        .map(l => ({ description: l.description, quantity: parseFloat(l.quantity) || 1, unit_price: parseFloat(l.unit_price) || 0 }))
+      await axios.post(`${API_BASE}/quotations`, {
+        job_id: quoteForm.job_id || null,
+        job_type: 'import',
+        customer_name: quoteForm.customer_name || null,
+        tax_rate: parseFloat(quoteForm.tax_rate) || 0,
+        notes: quoteForm.notes || null,
+        lines: validLines
+      })
+      setShowQuoteForm(false)
+      setQuoteForm({ job_id: '', customer_name: '', tax_rate: '0', notes: '' })
+      setQuoteLines([{ description: '', quantity: '1', unit_price: '' }])
+      load()
+    } catch (err) { alert('Failed to create quotation') }
+  }
+
+  const createBill = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const validLines = billLines.filter(l => l.description.trim())
+        .map(l => ({ description: l.description, quantity: parseFloat(l.quantity) || 1, unit_price: parseFloat(l.unit_price) || 0 }))
+      await axios.post(`${API_BASE}/bills`, {
+        job_id: billForm.job_id || null,
+        job_type: 'import',
+        vendor_name: billForm.vendor_name || null,
+        tax_rate: parseFloat(billForm.tax_rate) || 0,
+        notes: billForm.notes || null,
+        lines: validLines
+      })
+      setShowBillForm(false)
+      setBillForm({ job_id: '', vendor_name: '', tax_rate: '0', notes: '' })
+      setBillLines([{ description: '', quantity: '1', unit_price: '' }])
+      load()
+    } catch (err) { alert('Failed to create bill') }
+  }
+
+  const convertQuote = async (id: string) => {
+    try {
+      await axios.post(`${API_BASE}/quotations/${id}/convert`)
+      load()
+    } catch (err) { alert('Failed to convert quotation') }
+  }
+
+  const deleteQuote = async (id: string) => {
+    if (!confirm('Delete this quotation?')) return
+    try { await axios.delete(`${API_BASE}/quotations/${id}`); load() } catch { alert('Failed to delete') }
+  }
+
+  const deleteBill = async (id: string) => {
+    if (!confirm('Delete this bill?')) return
+    try { await axios.delete(`${API_BASE}/bills/${id}`); load() } catch { alert('Failed to delete') }
+  }
+
+  const loadPayments = (invoiceId: string) => {
+    axios.get(`${API_BASE}/invoices/${invoiceId}/payments`).then(r => setPayments(p => ({ ...p, [invoiceId]: r.data }))).catch(() => {})
+  }
+
+  const addPayment = async (invoiceId: string) => {
+    try {
+      await axios.post(`${API_BASE}/payments`, {
+        invoice_id: invoiceId,
+        amount: parseFloat(paymentAmount) || 0,
+        method: paymentMethod,
+        reference: `PAY-${Date.now()}`
+      })
+      setShowPaymentFor(null)
+      setPaymentAmount('')
+      load()
+    } catch (err) { alert('Failed to record payment') }
+  }
+
+  const deletePayment = async (invoiceId: string, paymentId: string) => {
+    if (!confirm('Delete this payment?')) return
+    try {
+      await axios.delete(`${API_BASE}/payments/${paymentId}`)
+      loadPayments(invoiceId)
+      load()
+    } catch (err) { alert('Failed to delete payment') }
+  }
+
+  const fmt = (n: any) => `$${Number(n || 0).toLocaleString()}`
+  const badgeFor = (s: string) => {
+    const map: Record<string, string> = { PAID: 'badge-completed', ISSUED: 'badge-in-progress', PARTIAL: 'badge-pending', DRAFT: 'badge-pending', CONVERTED: 'badge-completed' }
+    return map[s] || 'badge-pending'
+  }
+
+  return (
+    <div>
+      <div className="page-header-row mb-4">
+        <div>
+          <h1 className="page-title">&#128176; Finance</h1>
+          <p className="page-subtitle">Quotations, vendor bills, payments and profitability</p>
+        </div>
+      </div>
+
+      <div className="flex gap-2 mb-4" style={{ flexWrap: 'wrap' }}>
+        {(['overview', 'quotations', 'bills', 'payments'] as const).map(tab => (
+          <button key={tab} className={`btn ${activeTab === tab ? 'btn-primary' : 'btn-outline'}`} onClick={() => setActiveTab(tab)}>
+            {tab === 'overview' ? 'Overview' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'overview' && (
+        <>
+          {loading ? <div className="text-muted">Loading...</div> : (
+            <>
+              <div className="grid grid-4 mt-4">
+                <div className="stat-card">
+                  <div className="stat-icon green">&#128176;</div>
+                  <div className="stat-value">{fmt(analytics?.revenue_30d)}</div>
+                  <div className="stat-label">Revenue (30d)</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon red">&#128200;</div>
+                  <div className="stat-value">{fmt(analytics?.expenses_30d)}</div>
+                  <div className="stat-label">Expenses (30d)</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon blue">&#128202;</div>
+                  <div className="stat-value">{fmt(analytics?.profit_30d)}</div>
+                  <div className="stat-label">Profit (30d)</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon yellow">&#9203;</div>
+                  <div className="stat-value">{fmt(analytics?.outstanding_invoices)}</div>
+                  <div className="stat-label">Outstanding Invoices</div>
+                </div>
+              </div>
+              <div className="grid grid-2 mt-4">
+                <div className="card">
+                  <div className="card-header"><span className="card-title">Top Customers</span></div>
+                  {!analytics?.top_customers?.length ? <div className="empty-state"><p>No data yet</p></div> : (
+                    <div className="table-container">
+                      <table className="table">
+                        <thead><tr><th>Customer</th><th>Revenue</th><th>Profit</th></tr></thead>
+                        <tbody>
+                          {analytics.top_customers.map((c: any, i: number) => (
+                            <tr key={i}><td>{c.customer}</td><td>{fmt(c.revenue)}</td><td className={c.profit >= 0 ? 'text-success' : 'text-danger'}>{fmt(c.profit)}</td></tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+                <div className="card">
+                  <div className="card-header"><span className="card-title">Period Summary</span></div>
+                  <div style={{ padding: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}><span>Invoices issued</span><strong>{analytics?.invoices_issued || 0}</strong></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}><span>Bills received</span><strong>{analytics?.bills_received || 0}</strong></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}><span>Outstanding invoices</span><strong>{fmt(analytics?.outstanding_invoices)}</strong></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Unpaid bills</span><strong>{fmt(analytics?.unpaid_bills)}</strong></div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {activeTab === 'quotations' && (
+        <div className="card">
+          <div className="card-header">
+            <span className="card-title">Quotations</span>
+            {canManage(user) && <button className="btn btn-primary btn-sm" onClick={() => setShowQuoteForm(!showQuoteForm)}>{showQuoteForm ? 'Cancel' : '+ New Quotation'}</button>}
+          </div>
+          {showQuoteForm && (
+            <form onSubmit={createQuotation} style={{ padding: '16px' }}>
+              <div className="grid grid-3">
+                <div className="form-group">
+                  <label>Linked Job (optional)</label>
+                  <select className="form-select" value={quoteForm.job_id} onChange={e => setQuoteForm({ ...quoteForm, job_id: e.target.value })}>
+                    <option value="">None</option>
+                    {jobs.map(j => <option key={j.id} value={j.id}>{j.job_number}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Customer Name</label>
+                  <input className="form-input" value={quoteForm.customer_name} onChange={e => setQuoteForm({ ...quoteForm, customer_name: e.target.value })} placeholder="Customer" />
+                </div>
+                <div className="form-group">
+                  <label>Tax Rate (%)</label>
+                  <input className="form-input" type="number" step="0.01" value={quoteForm.tax_rate} onChange={e => setQuoteForm({ ...quoteForm, tax_rate: e.target.value })} />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Notes</label>
+                <input className="form-input" value={quoteForm.notes} onChange={e => setQuoteForm({ ...quoteForm, notes: e.target.value })} />
+              </div>
+              <div className="card-header"><span className="card-title">Lines</span></div>
+              {quoteLines.map((l, i) => (
+                <div className="grid grid-4" key={i}>
+                  <div className="form-group"><label>Description</label><input className="form-input" value={l.description} onChange={e => { const nl = [...quoteLines]; nl[i].description = e.target.value; setQuoteLines(nl) }} /></div>
+                  <div className="form-group"><label>Qty</label><input className="form-input" type="number" value={l.quantity} onChange={e => { const nl = [...quoteLines]; nl[i].quantity = e.target.value; setQuoteLines(nl) }} /></div>
+                  <div className="form-group"><label>Unit Price</label><input className="form-input" type="number" step="0.01" value={l.unit_price} onChange={e => { const nl = [...quoteLines]; nl[i].unit_price = e.target.value; setQuoteLines(nl) }} /></div>
+                  <div className="form-group" style={{ alignSelf: 'end' }}><button type="button" className="btn btn-outline btn-sm" onClick={() => setQuoteLines(quoteLines.filter((_, x) => x !== i))}>Remove</button></div>
+                </div>
+              ))}
+              <button type="button" className="btn btn-outline btn-sm" onClick={() => setQuoteLines([...quoteLines, { description: '', quantity: '1', unit_price: '' }])}>+ Add Line</button>
+              <div className="mt-4"><button type="submit" className="btn btn-primary">Create Quotation</button></div>
+            </form>
+          )}
+          {quotations.length === 0 ? <div className="empty-state"><p>No quotations yet</p></div> : (
+            <div className="table-container">
+              <table className="table">
+                <thead><tr><th>Quote #</th><th>Customer</th><th>Total</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {quotations.map(q => (
+                    <tr key={q.id}>
+                      <td>{q.quote_number}</td>
+                      <td>{q.customer_name || '-'}</td>
+                      <td>{fmt(q.total)}</td>
+                      <td><span className={`badge ${badgeFor(q.status)}`}>{q.status.replace(/_/g, ' ')}</span></td>
+                      <td>{q.created_at ? new Date(q.created_at).toLocaleDateString() : '-'}</td>
+                      <td>
+                        <div className="flex gap-1">
+                          {q.status !== 'CONVERTED' && <button className="btn btn-primary btn-sm" onClick={() => convertQuote(q.id)}>Convert</button>}
+                          <button className="btn btn-danger btn-sm" onClick={() => deleteQuote(q.id)}>Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'bills' && (
+        <div className="card">
+          <div className="card-header">
+            <span className="card-title">Vendor Bills</span>
+            {canManage(user) && <button className="btn btn-primary btn-sm" onClick={() => setShowBillForm(!showBillForm)}>{showBillForm ? 'Cancel' : '+ New Bill'}</button>}
+          </div>
+          {showBillForm && (
+            <form onSubmit={createBill} style={{ padding: '16px' }}>
+              <div className="grid grid-3">
+                <div className="form-group">
+                  <label>Linked Job (optional)</label>
+                  <select className="form-select" value={billForm.job_id} onChange={e => setBillForm({ ...billForm, job_id: e.target.value })}>
+                    <option value="">None</option>
+                    {jobs.map(j => <option key={j.id} value={j.id}>{j.job_number}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Vendor Name</label>
+                  <input className="form-input" value={billForm.vendor_name} onChange={e => setBillForm({ ...billForm, vendor_name: e.target.value })} placeholder="Vendor" />
+                </div>
+                <div className="form-group">
+                  <label>Tax Rate (%)</label>
+                  <input className="form-input" type="number" step="0.01" value={billForm.tax_rate} onChange={e => setBillForm({ ...billForm, tax_rate: e.target.value })} />
+                </div>
+              </div>
+              <div className="card-header"><span className="card-title">Lines</span></div>
+              {billLines.map((l, i) => (
+                <div className="grid grid-4" key={i}>
+                  <div className="form-group"><label>Description</label><input className="form-input" value={l.description} onChange={e => { const nl = [...billLines]; nl[i].description = e.target.value; setBillLines(nl) }} /></div>
+                  <div className="form-group"><label>Qty</label><input className="form-input" type="number" value={l.quantity} onChange={e => { const nl = [...billLines]; nl[i].quantity = e.target.value; setBillLines(nl) }} /></div>
+                  <div className="form-group"><label>Unit Price</label><input className="form-input" type="number" step="0.01" value={l.unit_price} onChange={e => { const nl = [...billLines]; nl[i].unit_price = e.target.value; setBillLines(nl) }} /></div>
+                  <div className="form-group" style={{ alignSelf: 'end' }}><button type="button" className="btn btn-outline btn-sm" onClick={() => setBillLines(billLines.filter((_, x) => x !== i))}>Remove</button></div>
+                </div>
+              ))}
+              <button type="button" className="btn btn-outline btn-sm" onClick={() => setBillLines([...billLines, { description: '', quantity: '1', unit_price: '' }])}>+ Add Line</button>
+              <div className="mt-4"><button type="submit" className="btn btn-primary">Create Bill</button></div>
+            </form>
+          )}
+          {bills.length === 0 ? <div className="empty-state"><p>No bills yet</p></div> : (
+            <div className="table-container">
+              <table className="table">
+                <thead><tr><th>Bill #</th><th>Vendor</th><th>Total</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {bills.map(b => (
+                    <tr key={b.id}>
+                      <td>{b.bill_number}</td>
+                      <td>{b.vendor_name || '-'}</td>
+                      <td>{fmt(b.total)}</td>
+                      <td><span className={`badge ${b.status === 'PAID' ? 'badge-completed' : 'badge-pending'}`}>{b.status.replace(/_/g, ' ')}</span></td>
+                      <td>{b.bill_date ? new Date(b.bill_date).toLocaleDateString() : '-'}</td>
+                      <td><button className="btn btn-danger btn-sm" onClick={() => deleteBill(b.id)}>Delete</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'payments' && (
+        <div className="card">
+          <div className="card-header"><span className="card-title">Payments</span></div>
+          {invoices.length === 0 ? <div className="empty-state"><p>No invoices yet</p></div> : (
+            <div className="table-container">
+              <table className="table">
+                <thead><tr><th>Invoice #</th><th>Customer</th><th>Total</th><th>Status</th><th>Payments</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {invoices.map(inv => {
+                    const invPayments = payments[inv.id] || []
+                    return (
+                      <tr key={inv.id}>
+                        <td>{inv.invoice_number}</td>
+                        <td>{inv.customer_name || '-'}</td>
+                        <td>{fmt(inv.total)}</td>
+                        <td><span className={`badge ${badgeFor(inv.status)}`}>{inv.status.replace(/_/g, ' ')}</span></td>
+                        <td>{invPayments.length > 0 ? invPayments.map(p => <div key={p.id}>{fmt(p.amount)} ({p.method || '-'}) <button className="btn btn-danger btn-sm" onClick={() => deletePayment(inv.id, p.id)}>&#10005;</button></div>) : 'None'}</td>
+                        <td>
+                          <div className="flex gap-1">
+                            {showPaymentFor === inv.id ? (
+                              <>
+                                <input className="form-input" type="number" step="0.01" placeholder="Amount" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} style={{ width: '100px' }} />
+                                <button className="btn btn-primary btn-sm" onClick={() => addPayment(inv.id)}>Save</button>
+                                <button className="btn btn-outline btn-sm" onClick={() => setShowPaymentFor(null)}>Cancel</button>
+                              </>
+                            ) : (
+                              <button className="btn btn-primary btn-sm" onClick={() => { setShowPaymentFor(inv.id); setPayments(p => ({ ...p, [inv.id]: [] })); loadPayments(inv.id) }}>+ Payment</button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ContainersPage() {
+  const { user } = useAuth()
+  const [containers, setContainers] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [statusFilter, setStatusFilter] = useState('')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [events, setEvents] = useState<Record<string, any[]>>({})
+  const [formData, setFormData] = useState({ container_number: '', size: '40', type: 'DRY', status: 'EMPTY' })
+  const [eventForm, setEventForm] = useState({ event_type: '', description: '' })
+
+  const load = () => {
+    setLoading(true)
+    axios.get(`${API_BASE}/containers`).then(r => setContainers(r.data)).catch(() => setContainers([])).finally(() => setLoading(false))
+  }
+  useEffect(() => { load() }, [])
+
+  const create = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await axios.post(`${API_BASE}/containers`, formData)
+      setShowForm(false)
+      setFormData({ container_number: '', size: '40', type: 'DRY', status: 'EMPTY' })
+      load()
+    } catch (err) { alert('Failed to create container') }
+  }
+
+  const toggleEvents = (id: string) => {
+    if (expandedId === id) { setExpandedId(null); return }
+    setExpandedId(id)
+    axios.get(`${API_BASE}/containers/${id}/events`).then(r => setEvents(ev => ({ ...ev, [id]: r.data }))).catch(() => {})
+  }
+
+  const addEvent = async (id: string, e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await axios.post(`${API_BASE}/containers/${id}/events`, {
+        event_type: eventForm.event_type,
+        description: eventForm.description
+      })
+      setEventForm({ event_type: '', description: '' })
+      axios.get(`${API_BASE}/containers/${id}/events`).then(r => setEvents(ev => ({ ...ev, [id]: r.data })))
+      load()
+    } catch (err) { alert('Failed to add event') }
+  }
+
+  const deleteContainer = async (id: string) => {
+    if (!confirm('Delete this container?')) return
+    try { await axios.delete(`${API_BASE}/containers/${id}`); load() } catch { alert('Failed to delete') }
+  }
+
+  const badge = (s: string) => {
+    const map: Record<string, string> = { EMPTY: 'badge-completed', LOADED: 'badge-in-progress', IN_TRANSIT: 'badge-pending', ARRIVED: 'badge-in-progress' }
+    return map[s] || 'badge-pending'
+  }
+
+  const filtered = containers.filter(c => !statusFilter || c.status === statusFilter)
+
+  return (
+    <div>
+      <div className="page-header-row mb-4">
+        <div>
+          <h1 className="page-title">&#128666; Containers</h1>
+          <p className="page-subtitle">Track container status and events</p>
+        </div>
+        {canManage(user) && <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : '+ New Container'}</button>}
+      </div>
+
+      {showForm && (
+        <div className="card mb-4">
+          <div className="card-header"><span className="card-title">Register Container</span></div>
+          <form onSubmit={create} style={{ padding: '16px' }}>
+            <div className="grid grid-4">
+              <div className="form-group"><label>Container Number</label><input className="form-input" required value={formData.container_number} onChange={e => setFormData({ ...formData, container_number: e.target.value })} placeholder="e.g. MSKU1234567" /></div>
+              <div className="form-group"><label>Size</label><select className="form-select" value={formData.size} onChange={e => setFormData({ ...formData, size: e.target.value })}>{['20', '40', '45'].map(s => <option key={s} value={s}>{s}ft</option>)}</select></div>
+              <div className="form-group"><label>Type</label><select className="form-select" value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })}>{['DRY', 'REEFER', 'OPEN_TOP', 'FLAT_RACK', 'TANK'].map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}</select></div>
+              <div className="form-group"><label>Status</label><select className="form-select" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })}>{['EMPTY', 'LOADED', 'IN_TRANSIT', 'ARRIVED'].map(s => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}</select></div>
+            </div>
+            <div className="mt-4"><button type="submit" className="btn btn-primary">Register</button></div>
+          </form>
+        </div>
+      )}
+
+      <div className="card mb-4">
+        <div className="flex gap-4 items-center" style={{ flexWrap: 'wrap' }}>
+          <div className="form-group" style={{ marginBottom: 0, minWidth: '200px' }}>
+            <select className="form-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+              <option value="">All Status</option>
+              {['EMPTY', 'LOADED', 'IN_TRANSIT', 'ARRIVED'].map(s => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {loading ? <div className="text-muted">Loading...</div> : filtered.length === 0 ? <div className="empty-state"><p>No containers found</p></div> : (
+        <div className="card">
+          <div className="table-container">
+            <table className="table">
+              <thead><tr><th>Container #</th><th>Size</th><th>Type</th><th>Status</th><th>Last Event</th><th>Events</th><th>Actions</th></tr></thead>
+              <tbody>
+                {filtered.map(c => (
+                  <>
+                    <tr key={c.id}>
+                      <td>{c.container_number}</td>
+                      <td>{c.size || '-'}ft</td>
+                      <td>{c.type || '-'}</td>
+                      <td><span className={`badge ${badge(c.status)}`}>{c.status.replace(/_/g, ' ')}</span></td>
+                      <td>{c.last_event_at ? new Date(c.last_event_at).toLocaleString() : '-'}</td>
+                      <td><button className="btn btn-outline btn-sm" onClick={() => toggleEvents(c.id)}>{expandedId === c.id ? 'Hide' : 'View'}</button></td>
+                      <td><button className="btn btn-danger btn-sm" onClick={() => deleteContainer(c.id)}>Delete</button></td>
+                    </tr>
+                    {expandedId === c.id && (
+                      <tr key={`${c.id}-events`}>
+                        <td colSpan={7}>
+                          <div className="card" style={{ background: 'var(--bg-card, #fff)' }}>
+                            <div className="card-header"><span className="card-title">Event History</span></div>
+                            {!events[c.id]?.length ? <div className="empty-state"><p>No events</p></div> : (
+                              <div className="table-container">
+                                <table className="table">
+                                  <thead><tr><th>Type</th><th>Date</th><th>Description</th></tr></thead>
+                                  <tbody>
+                                    {events[c.id].map((ev: any) => (
+                                      <tr key={ev.id}><td>{ev.event_type.replace(/_/g, ' ')}</td><td>{ev.event_date ? new Date(ev.event_date).toLocaleString() : '-'}</td><td>{ev.description || '-'}</td></tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                            <form onSubmit={(e) => addEvent(c.id, e)} style={{ padding: '12px' }}>
+                              <div className="grid grid-3">
+                                <div className="form-group"><label>Event Type</label><select className="form-select" value={eventForm.event_type} onChange={e => setEventForm({ ...eventForm, event_type: e.target.value })} required><option value="">Select...</option>{['GATE_IN', 'GATE_OUT', 'LOADED', 'UNLOADED', 'IN_TRANSIT', 'ARRIVED', 'RETURNED'].map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}</select></div>
+                                <div className="form-group"><label>Description</label><input className="form-input" value={eventForm.description} onChange={e => setEventForm({ ...eventForm, description: e.target.value })} /></div>
+                                <div className="form-group" style={{ alignSelf: 'end' }}><button type="submit" className="btn btn-primary">Add Event</button></div>
+                              </div>
+                            </form>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function AirJobs() {
+  const [jobs, setJobs] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [statusFilter, setStatusFilter] = useState('')
+  const [selected, setSelected] = useState<string | null>(null)
+  const [activity, setActivity] = useState<Record<string, any[]>>({})
+  const [formData, setFormData] = useState({ carrier: '', origin: '', destination: '', awb_number: '', shipper: '', consignee: '', cargo_description: '', total_weight_kg: '', pieces: '', etd: '', eta: '', license_required: false })
+  const [team, setTeam] = useState('')
+
+  const load = () => {
+    setLoading(true)
+    axios.get(`${API_BASE}/air`).then(r => setJobs(r.data)).catch(() => setJobs([])).finally(() => setLoading(false))
+  }
+  useEffect(() => { load() }, [])
+
+  const create = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await axios.post(`${API_BASE}/air`, {
+        carrier: formData.carrier,
+        origin: formData.origin,
+        destination: formData.destination,
+        awb_number: formData.awb_number || null,
+        shipper: formData.shipper || null,
+        consignee: formData.consignee || null,
+        cargo_description: formData.cargo_description || null,
+        total_weight_kg: formData.total_weight_kg ? parseFloat(formData.total_weight_kg) : null,
+        pieces: formData.pieces ? parseInt(formData.pieces) : null,
+        etd: formData.etd ? new Date(formData.etd).toISOString() : null,
+        eta: formData.eta ? new Date(formData.eta).toISOString() : null,
+        license_required: formData.license_required
+      })
+      setShowForm(false)
+      setFormData({ carrier: '', origin: '', destination: '', awb_number: '', shipper: '', consignee: '', cargo_description: '', total_weight_kg: '', pieces: '', etd: '', eta: '', license_required: false })
+      load()
+    } catch (err) { alert('Failed to create air job') }
+  }
+
+  const act = async (id: string, endpoint: string, body?: any) => {
+    try { await axios.put(`${API_BASE}/air/${id}/${endpoint}`, body || {}); load(); if (selected === id) select(id) } catch { alert('Action failed') }
+  }
+
+  const select = (id: string) => {
+    setSelected(id)
+    axios.get(`${API_BASE}/air/activities?job_id=${id}`).then(r => setActivity(ac => ({ ...ac, [id]: r.data }))).catch(() => {})
+  }
+
+  const deleteJob = async (id: string) => {
+    if (!confirm('Delete this air job?')) return
+    try { await axios.delete(`${API_BASE}/air/${id}`); load() } catch { alert('Failed to delete') }
+  }
+
+  const badge = (s: string) => {
+    const map: Record<string, string> = { PENDING_APPROVAL: 'badge-pending', APPROVED: 'badge-in-progress', REJECTED: 'badge-rejected', CLOSED: 'badge-completed' }
+    return map[s] || 'badge-in-progress'
+  }
+
+  const filtered = jobs.filter(j => !statusFilter || j.status === statusFilter)
+
+  return (
+    <div>
+      <div className="page-header-row mb-4">
+        <div>
+          <h1 className="page-title">&#9992; Air Jobs</h1>
+          <p className="page-subtitle">Air freight operations with AWB tracking</p>
+        </div>
+        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : '+ New Air Job'}</button>
+      </div>
+
+      {showForm && (
+        <div className="card mb-4">
+          <div className="card-header"><span className="card-title">Create Air Job</span></div>
+          <form onSubmit={create} style={{ padding: '16px' }}>
+            <div className="grid grid-3">
+              <div className="form-group"><label>Carrier</label><input className="form-input" required value={formData.carrier} onChange={e => setFormData({ ...formData, carrier: e.target.value })} /></div>
+              <div className="form-group"><label>AWB Number</label><input className="form-input" value={formData.awb_number} onChange={e => setFormData({ ...formData, awb_number: e.target.value })} /></div>
+              <div className="form-group"><label>Flight Number</label><input className="form-input" placeholder="optional" /></div>
+              <div className="form-group"><label>Origin</label><input className="form-input" value={formData.origin} onChange={e => setFormData({ ...formData, origin: e.target.value })} /></div>
+              <div className="form-group"><label>Destination</label><input className="form-input" value={formData.destination} onChange={e => setFormData({ ...formData, destination: e.target.value })} /></div>
+              <div className="form-group"><label>Total Weight (kg)</label><input className="form-input" type="number" step="0.01" value={formData.total_weight_kg} onChange={e => setFormData({ ...formData, total_weight_kg: e.target.value })} /></div>
+              <div className="form-group"><label>Pieces</label><input className="form-input" type="number" value={formData.pieces} onChange={e => setFormData({ ...formData, pieces: e.target.value })} /></div>
+              <div className="form-group"><label>ETD</label><input className="form-input" type="datetime-local" value={formData.etd} onChange={e => setFormData({ ...formData, etd: e.target.value })} /></div>
+              <div className="form-group"><label>ETA</label><input className="form-input" type="datetime-local" value={formData.eta} onChange={e => setFormData({ ...formData, eta: e.target.value })} /></div>
+              <div className="form-group"><label>Shipper</label><input className="form-input" value={formData.shipper} onChange={e => setFormData({ ...formData, shipper: e.target.value })} /></div>
+              <div className="form-group"><label>Consignee</label><input className="form-input" value={formData.consignee} onChange={e => setFormData({ ...formData, consignee: e.target.value })} /></div>
+              <div className="form-group"><label>Cargo Description</label><input className="form-input" value={formData.cargo_description} onChange={e => setFormData({ ...formData, cargo_description: e.target.value })} /></div>
+            </div>
+            <label className="flex items-center gap-2" style={{ marginTop: '8px' }}>
+              <input type="checkbox" checked={formData.license_required} onChange={e => setFormData({ ...formData, license_required: e.target.checked })} /> License required
+            </label>
+            <div className="mt-4"><button type="submit" className="btn btn-primary">Create Air Job</button></div>
+          </form>
+        </div>
+      )}
+
+      <div className="card mb-4">
+        <div className="flex gap-4 items-center" style={{ flexWrap: 'wrap' }}>
+          <div className="form-group" style={{ marginBottom: 0, minWidth: '200px' }}>
+            <select className="form-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+              <option value="">All Status</option>
+              {['PENDING_APPROVAL', 'APPROVED', 'TEAM_ASSIGNED', 'PERMIT_SUBMITTED', 'FLIGHT_DEPARTED', 'FLIGHT_ARRIVED', 'REJECTED', 'CLOSED'].map(s => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {loading ? <div className="text-muted">Loading...</div> : filtered.length === 0 ? <div className="empty-state"><p>No air jobs found</p></div> : (
+        <div className="card">
+          <div className="table-container">
+            <table className="table">
+              <thead><tr><th>Job #</th><th>AWB</th><th>Carrier</th><th>Route</th><th>Status</th><th>Weight</th><th>Detail</th><th>Delete</th></tr></thead>
+              <tbody>
+                {filtered.map(j => (
+                  <>
+                    <tr key={j.id}>
+                      <td>{j.job_number}</td>
+                      <td>{j.awb_number || '-'}</td>
+                      <td>{j.carrier || '-'}</td>
+                      <td>{j.origin || '-'} &rarr; {j.destination || '-'}</td>
+                      <td><span className={`badge ${badge(j.status)}`}>{j.status.replace(/_/g, ' ')}</span></td>
+                      <td>{j.total_weight_kg ? `${j.total_weight_kg} kg` : '-'}</td>
+                      <td><button className="btn btn-outline btn-sm" onClick={() => selected === j.id ? setSelected(null) : select(j.id)}>{selected === j.id ? 'Hide' : 'Manage'}</button></td>
+                      <td><button className="btn btn-danger btn-sm" onClick={() => deleteJob(j.id)}>&#10005;</button></td>
+                    </tr>
+                    {selected === j.id && (
+                      <tr key={`${j.id}-detail`}>
+                        <td colSpan={8}>
+                          <div className="card" style={{ background: 'var(--bg-card, #fff)', padding: '16px' }}>
+                            <div className="grid grid-4 mb-4">
+                              <div><div className="text-muted">Shipper</div><strong>{j.shipper || '-'}</strong></div>
+                              <div><div className="text-muted">Consignee</div><strong>{j.consignee || '-'}</strong></div>
+                              <div><div className="text-muted">Cargo</div><strong>{j.cargo_description || '-'}</strong></div>
+                              <div><div className="text-muted">Pieces</div><strong>{j.pieces ?? '-'}</strong></div>
+                              <div><div className="text-muted">ETD</div><strong>{j.etd ? new Date(j.etd).toLocaleString() : '-'}</strong></div>
+                              <div><div className="text-muted">ATA</div><strong>{j.ata ? new Date(j.ata).toLocaleString() : '-'}</strong></div>
+                              <div><div className="text-muted">License</div><strong>{j.license_required ? (j.license_approved ? 'Approved' : 'Required') : 'Not required'}</strong></div>
+                              <div><div className="text-muted">Assigned Team</div><strong>{j.assigned_team || '-'}</strong></div>
+                            </div>
+                            <div className="flex gap-2 mb-4" style={{ flexWrap: 'wrap' }}>
+                              {j.status === 'PENDING_APPROVAL' && <button className="btn btn-primary btn-sm" onClick={() => act(j.id, 'approve')}>Approve</button>}
+                              {j.status === 'PENDING_APPROVAL' && <button className="btn btn-danger btn-sm" onClick={() => act(j.id, 'reject')}>Reject</button>}
+                              {(j.status === 'APPROVED') && (
+                                <>
+                                  <input className="form-input" placeholder="Team name" value={team} onChange={e => setTeam(e.target.value)} style={{ width: '180px' }} />
+                                  <button className="btn btn-primary btn-sm" onClick={() => { act(j.id, 'assign-team', { team }); setTeam('') }}>Assign Team</button>
+                                </>
+                              )}
+                              {j.status === 'TEAM_ASSIGNED' && !j.license_approved && j.license_required && <button className="btn btn-outline btn-sm" onClick={() => act(j.id, 'apply-license')}>Apply License</button>}
+                              {(j.status === 'APPROVED' || j.status === 'TEAM_ASSIGNED' || j.status === 'PERMIT_SUBMITTED') && <button className="btn btn-outline btn-sm" onClick={() => act(j.id, 'departure', { atd: new Date().toISOString() })}>Record Departure</button>}
+                              {j.status === 'FLIGHT_DEPARTED' && <button className="btn btn-outline btn-sm" onClick={() => act(j.id, 'arrival', { ata: new Date().toISOString() })}>Record Arrival</button>}
+                              {j.status === 'FLIGHT_ARRIVED' && <button className="btn btn-success btn-sm" onClick={() => act(j.id, 'close')}>Close Job</button>}
+                            </div>
+                            <div className="card-header"><span className="card-title">Activity Log</span></div>
+                            {!activity[j.id]?.length ? <div className="empty-state"><p>No activity yet</p></div> : (
+                              <div className="table-container">
+                                <table className="table">
+                                  <thead><tr><th>Action</th><th>Description</th><th>By</th><th>When</th></tr></thead>
+                                  <tbody>
+                                    {activity[j.id].map((a: any) => (
+                                      <tr key={a.id}><td>{a.action.replace(/_/g, ' ')}</td><td>{a.description || '-'}</td><td>{a.performed_by || '-'}</td><td>{a.created_at ? new Date(a.created_at).toLocaleString() : '-'}</td></tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function WarehousePage() {
+  const { user } = useAuth()
+  const [warehouses, setWarehouses] = useState<any[]>([])
+  const [items, setItems] = useState<any[]>([])
+  const [movements, setMovements] = useState<Record<string, any[]>>({})
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState<'warehouses' | 'inventory'>('inventory')
+  const [showWhForm, setShowWhForm] = useState(false)
+  const [showItemForm, setShowItemForm] = useState(false)
+  const [whForm, setWhForm] = useState({ name: '', code: '', location: '', manager: '' })
+  const [itemForm, setItemForm] = useState({ warehouse_id: '', sku: '', name: '', category: '', quantity: '0', unit: 'unit', min_stock: '0' })
+  const [movementFor, setMovementFor] = useState<string | null>(null)
+  const [movementForm, setMovementForm] = useState({ movement_type: 'IN', quantity: '', notes: '' })
+
+  const load = () => {
+    setLoading(true)
+    Promise.all([
+      axios.get(`${API_BASE}/warehouses`).then(r => r.data).catch(() => []),
+      axios.get(`${API_BASE}/inventory`).then(r => r.data).catch(() => [])
+    ]).then(([w, i]) => {
+      setWarehouses(w)
+      setItems(i)
+      if (itemForm.warehouse_id === '' && w.length > 0) setItemForm(f => ({ ...f, warehouse_id: w[0].id }))
+    }).finally(() => setLoading(false))
+  }
+  useEffect(() => { load() }, [])
+
+  const createWarehouse = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try { await axios.post(`${API_BASE}/warehouses`, whForm); setShowWhForm(false); setWhForm({ name: '', code: '', location: '', manager: '' }); load() } catch { alert('Failed to create warehouse') }
+  }
+
+  const createItem = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await axios.post(`${API_BASE}/inventory`, {
+        warehouse_id: itemForm.warehouse_id,
+        sku: itemForm.sku || null,
+        name: itemForm.name,
+        category: itemForm.category || null,
+        quantity: parseFloat(itemForm.quantity) || 0,
+        unit: itemForm.unit,
+        min_stock: parseFloat(itemForm.min_stock) || 0
+      })
+      setShowItemForm(false)
+      setItemForm({ warehouse_id: itemForm.warehouse_id, sku: '', name: '', category: '', quantity: '0', unit: 'unit', min_stock: '0' })
+      load()
+    } catch (err) { alert('Failed to create item') }
+  }
+
+  const toggleMovements = (id: string) => {
+    if (expandedId === id) { setExpandedId(null); return }
+    setExpandedId(id)
+    axios.get(`${API_BASE}/inventory/${id}/movements`).then(r => setMovements(m => ({ ...m, [id]: r.data }))).catch(() => {})
+  }
+
+  const addMovement = async (id: string, e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await axios.post(`${API_BASE}/inventory/${id}/movements`, {
+        item_id: id,
+        warehouse_id: itemForm.warehouse_id || warehouses[0]?.id,
+        movement_type: movementForm.movement_type,
+        quantity: parseFloat(movementForm.quantity) || 0,
+        notes: movementForm.notes || null
+      })
+      setMovementForm({ movement_type: 'IN', quantity: '', notes: '' })
+      setMovementFor(null)
+      load()
+    } catch (err) { alert('Failed to record movement') }
+  }
+
+  const deleteWarehouse = async (id: string) => {
+    if (!confirm('Delete this warehouse?')) return
+    try { await axios.delete(`${API_BASE}/warehouses/${id}`); load() } catch { alert('Failed to delete') }
+  }
+
+  const deleteItem = async (id: string) => {
+    if (!confirm('Delete this item?')) return
+    try { await axios.delete(`${API_BASE}/inventory/${id}`); load() } catch { alert('Failed to delete') }
+  }
+
+  const badge = (s: string) => {
+    const map: Record<string, string> = { IN_STOCK: 'badge-completed', LOW_STOCK: 'badge-pending', OUT_OF_STOCK: 'badge-rejected' }
+    return map[s] || 'badge-pending'
+  }
+
+  const whName = (id: string) => warehouses.find(w => w.id === id)?.name || id.slice(0, 8)
+
+  return (
+    <div>
+      <div className="page-header-row mb-4">
+        <div>
+          <h1 className="page-title">&#128230; Warehouse & Inventory</h1>
+          <p className="page-subtitle">Manage storage locations and stock levels</p>
+        </div>
+      </div>
+
+      <div className="flex gap-2 mb-4" style={{ flexWrap: 'wrap' }}>
+        <button className={`btn ${tab === 'inventory' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setTab('inventory')}>Inventory</button>
+        <button className={`btn ${tab === 'warehouses' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setTab('warehouses')}>Warehouses</button>
+      </div>
+
+      {tab === 'warehouses' && (
+        <div className="card">
+          <div className="card-header">
+            <span className="card-title">Warehouses</span>
+            {canManage(user) && <button className="btn btn-primary btn-sm" onClick={() => setShowWhForm(!showWhForm)}>{showWhForm ? 'Cancel' : '+ New Warehouse'}</button>}
+          </div>
+          {showWhForm && (
+            <form onSubmit={createWarehouse} style={{ padding: '16px' }}>
+              <div className="grid grid-4">
+                <div className="form-group"><label>Name</label><input className="form-input" required value={whForm.name} onChange={e => setWhForm({ ...whForm, name: e.target.value })} /></div>
+                <div className="form-group"><label>Code</label><input className="form-input" required value={whForm.code} onChange={e => setWhForm({ ...whForm, code: e.target.value })} placeholder="e.g. PP-01" /></div>
+                <div className="form-group"><label>Location</label><input className="form-input" value={whForm.location} onChange={e => setWhForm({ ...whForm, location: e.target.value })} /></div>
+                <div className="form-group"><label>Manager</label><input className="form-input" value={whForm.manager} onChange={e => setWhForm({ ...whForm, manager: e.target.value })} /></div>
+              </div>
+              <div className="mt-4"><button type="submit" className="btn btn-primary">Create</button></div>
+            </form>
+          )}
+          {warehouses.length === 0 ? <div className="empty-state"><p>No warehouses yet</p></div> : (
+            <div className="table-container">
+              <table className="table">
+                <thead><tr><th>Name</th><th>Code</th><th>Location</th><th>Manager</th><th>Status</th><th>Delete</th></tr></thead>
+                <tbody>
+                  {warehouses.map(w => (
+                    <tr key={w.id}>
+                      <td>{w.name}</td><td>{w.code}</td><td>{w.location || '-'}</td><td>{w.manager || '-'}</td>
+                      <td><span className={`badge ${w.status === 'ACTIVE' ? 'badge-completed' : 'badge-pending'}`}>{w.status}</span></td>
+                      <td><button className="btn btn-danger btn-sm" onClick={() => deleteWarehouse(w.id)}>Delete</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'inventory' && (
+        <div className="card">
+          <div className="card-header">
+            <span className="card-title">Inventory Items</span>
+            {canManage(user) && <button className="btn btn-primary btn-sm" onClick={() => setShowItemForm(!showItemForm)}>{showItemForm ? 'Cancel' : '+ New Item'}</button>}
+          </div>
+          {showItemForm && (
+            <form onSubmit={createItem} style={{ padding: '16px' }}>
+              <div className="grid grid-4">
+                <div className="form-group"><label>Warehouse</label><select className="form-select" required value={itemForm.warehouse_id} onChange={e => setItemForm({ ...itemForm, warehouse_id: e.target.value })}>{warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}</select></div>
+                <div className="form-group"><label>SKU</label><input className="form-input" value={itemForm.sku} onChange={e => setItemForm({ ...itemForm, sku: e.target.value })} /></div>
+                <div className="form-group"><label>Name</label><input className="form-input" required value={itemForm.name} onChange={e => setItemForm({ ...itemForm, name: e.target.value })} /></div>
+                <div className="form-group"><label>Category</label><input className="form-input" value={itemForm.category} onChange={e => setItemForm({ ...itemForm, category: e.target.value })} /></div>
+                <div className="form-group"><label>Quantity</label><input className="form-input" type="number" step="0.01" value={itemForm.quantity} onChange={e => setItemForm({ ...itemForm, quantity: e.target.value })} /></div>
+                <div className="form-group"><label>Unit</label><input className="form-input" value={itemForm.unit} onChange={e => setItemForm({ ...itemForm, unit: e.target.value })} /></div>
+                <div className="form-group"><label>Min Stock</label><input className="form-input" type="number" step="0.01" value={itemForm.min_stock} onChange={e => setItemForm({ ...itemForm, min_stock: e.target.value })} /></div>
+              </div>
+              <div className="mt-4"><button type="submit" className="btn btn-primary">Create Item</button></div>
+            </form>
+          )}
+          {loading ? <div className="text-muted">Loading...</div> : items.length === 0 ? <div className="empty-state"><p>No inventory items yet</p></div> : (
+            <div className="table-container">
+              <table className="table">
+                <thead><tr><th>Name</th><th>SKU</th><th>Warehouse</th><th>Qty</th><th>Min</th><th>Status</th><th>Movements</th><th>Delete</th></tr></thead>
+                <tbody>
+                  {items.map(it => (
+                    <>
+                      <tr key={it.id}>
+                        <td>{it.name}</td><td>{it.sku || '-'}</td><td>{whName(it.warehouse_id)}</td>
+                        <td>{Number(it.quantity || 0)} {it.unit || ''}</td><td>{Number(it.min_stock || 0)}</td>
+                        <td><span className={`badge ${badge(it.status)}`}>{it.status.replace(/_/g, ' ')}</span></td>
+                        <td>
+                          <button className="btn btn-outline btn-sm" onClick={() => toggleMovements(it.id)}>{expandedId === it.id ? 'Hide' : 'View'}</button>
+                          <button className="btn btn-primary btn-sm ml-2" onClick={() => setMovementFor(it.id)}>+ Move</button>
+                        </td>
+                        <td><button className="btn btn-danger btn-sm" onClick={() => deleteItem(it.id)}>Delete</button></td>
+                      </tr>
+                      {expandedId === it.id && (
+                        <tr key={`${it.id}-mv`}>
+                          <td colSpan={8}>
+                            <div className="card" style={{ background: 'var(--bg-card, #fff)', padding: '12px' }}>
+                              <div className="card-header"><span className="card-title">Stock Movements</span></div>
+                              {!movements[it.id]?.length ? <div className="empty-state"><p>No movements</p></div> : (
+                                <div className="table-container">
+                                  <table className="table">
+                                    <thead><tr><th>Type</th><th>Qty</th><th>Reference</th><th>Notes</th><th>When</th></tr></thead>
+                                    <tbody>
+                                      {movements[it.id].map((m: any) => (
+                                        <tr key={m.id}><td><span className={`badge ${m.movement_type === 'IN' ? 'badge-completed' : 'badge-rejected'}`}>{m.movement_type}</span></td><td>{m.quantity}</td><td>{m.reference_type || '-'}</td><td>{m.notes || '-'}</td><td>{m.created_at ? new Date(m.created_at).toLocaleString() : '-'}</td></tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                      {movementFor === it.id && (
+                        <tr key={`${it.id}-mf`}>
+                          <td colSpan={8}>
+                            <form onSubmit={(e) => addMovement(it.id, e)} style={{ padding: '12px' }}>
+                              <div className="grid grid-4">
+                                <div className="form-group"><label>Type</label><select className="form-select" value={movementForm.movement_type} onChange={e => setMovementForm({ ...movementForm, movement_type: e.target.value })}><option value="IN">IN (receive)</option><option value="OUT">OUT (issue)</option></select></div>
+                                <div className="form-group"><label>Quantity</label><input className="form-input" type="number" step="0.01" required value={movementForm.quantity} onChange={e => setMovementForm({ ...movementForm, quantity: e.target.value })} /></div>
+                                <div className="form-group"><label>Notes</label><input className="form-input" value={movementForm.notes} onChange={e => setMovementForm({ ...movementForm, notes: e.target.value })} /></div>
+                                <div className="form-group" style={{ alignSelf: 'end' }}><button type="submit" className="btn btn-primary">Record</button> <button type="button" className="btn btn-outline" onClick={() => setMovementFor(null)}>Cancel</button></div>
+                              </div>
+                            </form>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function PlanGate({ feature, children }: { feature: string; children: React.ReactNode }) {
   const { user } = useAuth()
   return (
@@ -4855,6 +5903,10 @@ function App() {
         <Route path="/exports/new" element={<Layout><CreateExportJob /></Layout>} />
         <Route path="/exports/:id" element={<Layout><ExportJobDetail /></Layout>} />
         <Route path="/invoices" element={<PlanGate feature="invoicing"><Invoices /></PlanGate>} />
+        <Route path="/finance" element={<PlanGate feature="finance"><FinanceOverview /></PlanGate>} />
+        <Route path="/containers" element={<PlanGate feature="containers"><ContainersPage /></PlanGate>} />
+        <Route path="/air" element={<PlanGate feature="air"><AirJobs /></PlanGate>} />
+        <Route path="/warehouses" element={<PlanGate feature="warehouse"><WarehousePage /></PlanGate>} />
         <Route path="/trucks" element={<Layout><Trucks /></Layout>} />
         <Route path="/trailers" element={<Layout><Trailers /></Layout>} />
         <Route path="/drivers" element={<Layout><Drivers /></Layout>} />

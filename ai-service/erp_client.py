@@ -38,6 +38,48 @@ def fetch_items(token: str) -> list:
 def fetch_invoices(token: str) -> list:
     return fetch("/invoices", token)
 
+def fetch_quotations(token: str) -> list:
+    return fetch("/quotations", token)
+
+def fetch_bills(token: str) -> list:
+    return fetch("/bills", token)
+
+def fetch_finance_analytics(token: str) -> dict:
+    url = f"{settings.gateway_url}/api/finance/analytics"
+    headers = {"Authorization": f"Bearer {token}"}
+    try:
+        with httpx.Client(timeout=20.0) as client:
+            res = client.get(url, headers=headers)
+            if res.status_code == 200:
+                return res.json()
+    except Exception:
+        pass
+    return {}
+
+def fetch_containers(token: str) -> list:
+    return fetch("/containers", token)
+
+def fetch_containers_in_transit(token: str) -> list:
+    return fetch("/containers/in-transit", token)
+
+def fetch_air_jobs(token: str) -> list:
+    return fetch("/air", token)
+
+def fetch_inventory(token: str) -> list:
+    return fetch("/inventory", token)
+
+def fetch_inventory_summary(token: str) -> dict:
+    url = f"{settings.gateway_url}/api/inventory/summary"
+    headers = {"Authorization": f"Bearer {token}"}
+    try:
+        with httpx.Client(timeout=20.0) as client:
+            res = client.get(url, headers=headers)
+            if res.status_code == 200:
+                return res.json()
+    except Exception:
+        pass
+    return {}
+
 def fetch_job(token: str, job_id: str):
     res = fetch(f"/jobs/{job_id}", token)
     return res[0] if res else None

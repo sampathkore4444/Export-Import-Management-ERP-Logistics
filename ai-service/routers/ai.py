@@ -94,7 +94,7 @@ class ChatRequest(BaseModel):
 def detect_intents(message: str) -> list:
     text = message.lower()
     intents = []
-    if any(k in text for k in ["invoice", "revenue", "bill", "money", "cost", "payment", "outstanding"]):
+    if any(k in text for k in ["invoice", "revenue", "bill", "money", "cost", "payment", "outstanding", "profit", "expense", "quotation", "finance", "quote"]):
         intents.append("invoices")
     if any(k in text for k in ["customer", "client", "consignee", "shipper"]):
         intents.append("customers")
@@ -106,6 +106,12 @@ def detect_intents(message: str) -> list:
         intents.append("exports")
     if any(k in text for k in ["truck", "driver", "fleet", "trailer"]):
         intents.append("fleet")
+    if any(k in text for k in ["container", "teu", "containerized"]):
+        intents.append("containers")
+    if any(k in text for k in ["air", "awb", "flight", "air freight", "air cargo"]):
+        intents.append("air")
+    if any(k in text for k in ["warehouse", "inventory", "stock", "storage", "sku"]):
+        intents.append("warehouse")
     intents.append("import")
     return intents
 

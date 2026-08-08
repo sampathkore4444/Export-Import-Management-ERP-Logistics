@@ -20,13 +20,27 @@ ALGORITHM = os.environ.get("ALGORITHM", "HS256")
 
 PLAN_FEATURES = {
     "starter": {"import", "export", "fleet", "master-data"},
-    "business": {"import", "export", "fleet", "master-data", "invoicing", "documents", "templates", "ai"},
-    "enterprise": {"import", "export", "fleet", "master-data", "invoicing", "documents", "templates", "ai"},
+    "business": {
+        "import", "export", "fleet", "master-data", "invoicing", "documents", "templates", "ai",
+        "finance", "containers", "air", "warehouse",
+    },
+    "enterprise": {
+        "import", "export", "fleet", "master-data", "invoicing", "documents", "templates", "ai",
+        "finance", "containers", "air", "warehouse",
+    },
 }
 
 ROUTE_FEATURES = [
     ("/api/ai", "ai"),
     ("/api/invoices", "invoicing"),
+    ("/api/quotations", "finance"),
+    ("/api/bills", "finance"),
+    ("/api/payments", "finance"),
+    ("/api/finance", "finance"),
+    ("/api/containers", "containers"),
+    ("/api/air", "air"),
+    ("/api/warehouses", "warehouse"),
+    ("/api/inventory", "warehouse"),
     ("/api/templates", "templates"),
     ("/api/export-documents", "documents"),
     ("/api/documents", "documents"),
@@ -64,6 +78,7 @@ IMPORT_SERVICE = "http://localhost:8002"
 FLEET_SERVICE = "http://localhost:8003"
 MASTER_DATA_SERVICE = "http://localhost:8004"
 AI_SERVICE = "http://localhost:8005"
+WAREHOUSE_SERVICE = "http://localhost:8006"
 
 
 async def proxy(request: Request, service_url: str):
@@ -121,12 +136,31 @@ async def import_proxy(request: Request, path: str = ""):
 @app.api_route("/api/templates", methods=["GET", "POST"])
 @app.api_route("/api/invoices/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
 @app.api_route("/api/invoices", methods=["GET", "POST"])
+@app.api_route("/api/quotations/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/api/quotations", methods=["GET", "POST"])
+@app.api_route("/api/bills/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/api/bills", methods=["GET", "POST"])
+@app.api_route("/api/payments/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/api/payments", methods=["GET", "POST"])
+@app.api_route("/api/finance/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/api/finance", methods=["GET", "POST"])
+@app.api_route("/api/containers/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/api/containers", methods=["GET", "POST"])
+@app.api_route("/api/air/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/api/air", methods=["GET", "POST"])
 @app.api_route("/api/documents/{path:path}", methods=["GET", "DELETE"])
 @app.api_route("/api/exports/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
 @app.api_route("/api/exports", methods=["GET", "POST"])
 @app.api_route("/api/export-documents/{path:path}", methods=["GET", "DELETE"])
 async def import_extra_proxy(request: Request, path: str = ""):
     return await proxy(request, IMPORT_SERVICE)
+
+@app.api_route("/api/warehouses/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/api/warehouses", methods=["GET", "POST"])
+@app.api_route("/api/inventory/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/api/inventory", methods=["GET", "POST"])
+async def warehouse_proxy(request: Request, path: str = ""):
+    return await proxy(request, WAREHOUSE_SERVICE)
 
 @app.api_route("/api/trucks/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
 @app.api_route("/api/trucks", methods=["GET", "POST"])
