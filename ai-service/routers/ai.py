@@ -258,7 +258,7 @@ class MarketingChatRequest(BaseModel):
 MARKETING_KB = [
     {
         "topic": "Overview",
-        "keywords": ["what can", "overview", "features", "modules", "platform", "system", "do you offer", "what is cargoflow", "erp"],
+        "keywords": ["what can", "overview", "features", "modules", "platform", "do you offer", "what is cargoflow", "erp", "what can you", "what do you do", "how can you help"],
         "answer": "CargoFlow ERP is an all-in-one import/export logistics management platform for freight forwarders, agents and 3PL operators. It covers the full shipment lifecycle (import and export), fleet management, invoicing & billing, documents & templates, master data, search & alerts, roles & approvals, reports & dashboard, plus a built-in self-hosted AI copilot.",
     },
     {
@@ -293,7 +293,7 @@ MARKETING_KB = [
     },
     {
         "topic": "AI assistant",
-        "keywords": ["ai", "assistant", "copilot", "ocr", "extract", "predict", "delay prediction", "weekly report", "smart assist", "ollama", "chat"],
+        "keywords": ["ai", "assistant", "copilot", "ocr", "extract", "predict", "delay prediction", "weekly report", "smart assist", "ollama"],
         "answer": "CargoFlow includes a private, self-hosted AI copilot that answers questions about your operations in plain language, reads shipping documents with OCR extraction, predicts delays and ETAs, generates a weekly operations report and gives smart job-assist tips. It runs fully offline with no external APIs.",
     },
     {
@@ -333,12 +333,12 @@ MARKETING_KB = [
     },
     {
         "topic": "Getting started",
-        "keywords": ["start", "get started", "begin", "demo", "sign up", "register", "signup", "onboarding", "book", "contact", "sales", "buy", "purchase", "support", "help"],
+        "keywords": ["start", "get started", "begin", "demo", "sign up", "register", "signup", "onboarding", "book", "contact", "sales", "buy", "purchase"],
         "answer": "You can book a live demo or start a free 14-day trial from the site. Every plan includes a guided onboarding call, and our sales team is available at sales@cargoflow.app.",
     },
     {
         "topic": "Company",
-        "keywords": ["cargoflow", "about", "company", "who are you", "who is", "forwarder", "freight", "3pl", "agent", "logistics"],
+        "keywords": ["cargoflow", "company", "who are you", "who is", "forwarder", "freight", "3pl", "agent", "logistics"],
         "answer": "CargoFlow ERP is built for freight forwarders, agents and 3PL operators to manage import and export shipments, their fleet, invoicing, documents and AI-assisted reporting on one platform.",
     },
 ]
@@ -377,14 +377,26 @@ def _marketing_keywords() -> set:
     return words
 
 
-MARKETING_PLATFORM_WORDS = _marketing_keywords()
+def _compile_multi_pattern(items: list) -> re.Pattern:
+    parts = []
+    for k in items:
+        low = k.lower()
+        if re.fullmatch(r"[a-z0-9]+", low):
+            parts.append(r"\b" + re.escape(low) + r"\b")
+        else:
+            parts.append(re.escape(low))
+    return re.compile("|".join(parts))
+
+
+MARKETING_PLATFORM_PATTERN = _compile_multi_pattern(_marketing_keywords())
+MARKETING_GREETING_PATTERN = _compile_multi_pattern(GREETING_KEYWORDS)
 
 
 def classify_marketing(message: str) -> str:
     text = message.lower().strip()
-    if any(k in text for k in MARKETING_PLATFORM_WORDS):
+    if MARKETING_PLATFORM_PATTERN.search(text):
         return "platform"
-    if any(k in text for k in GREETING_KEYWORDS):
+    if MARKETING_GREETING_PATTERN.search(text):
         return "greeting"
     return "off_topic"
 
