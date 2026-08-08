@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CargoFlow ERP — Import &amp; Export Management Software</title>
+<meta name="description" content="CargoFlow ERP is an all-in-one import/export logistics management platform with AI-powered assistants, full shipment lifecycle tracking, fleet management, and invoicing." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --primary: #0ea5e9;
+    --primary-dark: #0284c7;
+    --primary-light: #38bdf8;
+    --ink: #0f172a;
+    --ink-soft: #334155;
+    --muted: #64748b;
+    --line: #e2e8f0;
+    --bg: #ffffff;
+    --bg-soft: #f8fafc;
+    --bg-grad: linear-gradient(135deg, #0c4a6e 0%, #0369a1 45%, #0ea5e9 100%);
+    --radius: 16px;
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, .08), 0 1px 2px rgba(15, 23, 42, .04);
+    --shadow-md: 0 8px 30px rgba(15, 23, 42, .10);
+    --shadow-lg: 0 24px 60px rgba(2, 132, 199, .16);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  .container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+  section { padding: 96px 0; }
+
+  /* ===== Nav ===== */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255,255,255,.82);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; }
+  .brand-mark {
+    width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary-dark));
+    color: #fff; font-weight: 900; font-size: 20px;
+    box-shadow: 0 6px 18px rgba(2,132,199,.35);
+  }
+  .brand span b { color: var(--primary); }
+  .nav-links { display: flex; align-items: center; gap: 30px; }
+  .nav-links a { color: var(--ink-soft); font-weight: 500; font-size: 15px; transition: color .2s; }
+  .nav-links a:hover { color: var(--primary); }
+  .nav-cta { display: flex; align-items: center; gap: 12px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border-radius: 12px; padding: 12px 22px; font-weight: 600; font-size: 15px;
+    cursor: pointer; border: 1px solid transparent; transition: all .2s;
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--primary-light), var(--primary-dark)); color: #fff; box-shadow: 0 8px 20px rgba(2,132,199,.30); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(2,132,199,.38); }
+  .btn-outline { background: #fff; border-color: var(--line); color: var(--ink); }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-white { background: #fff; color: var(--primary-dark); }
+  .btn-white:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(0,0,0,.18); }
+  .btn-ghost-light { border-color: rgba(255,255,255,.35); color: #fff; background: rgba(255,255,255,.06); }
+  .btn-ghost-light:hover { background: rgba(255,255,255,.14); }
+
+  /* ===== Hero ===== */
+  .hero {
+    position: relative; overflow: hidden;
+    background: var(--bg-grad);
+    color: #fff;
+    padding: 110px 0 140px;
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; border-radius: 50%; filter: blur(80px); opacity: .5;
+  }
+  .hero::before { width: 460px; height: 460px; background: #38bdf8; top: -160px; right: -80px; }
+  .hero::after { width: 380px; height: 380px; background: #0c4a6e; bottom: -140px; left: -100px; }
+  .hero-inner { position: relative; display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25);
+    padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  }
+  .hero-eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 4px rgba(74,222,128,.25); }
+  .hero h1 { font-size: clamp(34px, 5vw, 56px); font-weight: 900; line-height: 1.08; letter-spacing: -1.5px; margin: 22px 0 20px; }
+  .hero h1 em { font-style: normal; color: #7dd3fc; }
+  .hero p.lead { font-size: 19px; color: rgba(255,255,255,.88); max-width: 540px; margin-bottom: 34px; }
+  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 34px; }
+  .hero-proof { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .avatars { display: flex; }
+  .avatars span {
+    width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(255,255,255,.9);
+    display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px; margin-left: -10px;
+  }
+  .avatars span:first-child { margin-left: 0; }
+  .hero-proof small { display: block; color: rgba(255,255,255,.8); }
+  .hero-proof small b { color: #fff; }
+
+  .hero-card {
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18);
+    border-radius: 20px; padding: 22px; backdrop-filter: blur(6px);
+    box-shadow: 0 30px 60px rgba(0,0,0,.25);
+  }
+  .hero-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .hero-card-top .brand-mark { width: 30px; height: 30px; font-size: 15px; border-radius: 8px; }
+  .hero-card-top .dots { display: flex; gap: 6px; margin-left: auto; }
+  .hero-card-top .dots i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.35); }
+  .hero-card-top .dots i:nth-child(2) { background: rgba(255,255,255,.5); }
+  .hero-card-top .dots i:nth-child(3) { background: rgba(255,255,255,.65); }
+  .hero-kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+  .hero-kpi div { background: rgba(255,255,255,.1); border-radius: 12px; padding: 12px; }
+  .hero-kpi b { display: block; font-size: 22px; }
+  .hero-kpi small { color: rgba(255,255,255,.75); font-size: 12px; }
+  .hero-timeline { background: rgba(255,255,255,.08); border-radius: 14px; padding: 14px; }
+  .hero-timeline .t { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 7px 0; color: rgba(255,255,255,.9); }
+  .hero-timeline .t i { width: 22px; height: 22px; border-radius: 50%; background: rgba(74,222,128,.25); display: grid; place-items: center; font-size: 11px; }
+  .hero-timeline .t.dim i { background: rgba(255,255,255,.12); }
+  .hero-timeline .t .bar { margin-left: auto; width: 70px; height: 7px; border-radius: 6px; background: rgba(255,255,255,.15); overflow: hidden; }
+  .hero-timeline .t .bar i { display: block; width: 70%; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--primary-light), #7dd3fc); }
+
+  /* ===== Logo strip ===== */
+  .logo-strip { padding: 34px 0; border-bottom: 1px solid var(--line); background: var(--bg-soft); }
+  .logo-strip .container { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px; }
+  .logo-strip small { color: var(--muted); font-weight: 600; letter-spacing: .5px; }
+  .logo-strip .logos { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+  .logo-strip .logos span { font-weight: 800; color: #94a3b8; font-size: 16px; letter-spacing: -.5px; }
+
+  /* ===== Sections base ===== */
+  .kicker { display: inline-block; font-weight: 700; font-size: 13px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--primary); margin-bottom: 12px; }
+  h2.sec-title { font-size: clamp(28px, 4vw, 40px); font-weight: 800; letter-spacing: -1px; line-height: 1.15; }
+  .sec-sub { color: var(--muted); font-size: 17px; max-width: 640px; }
+  .sec-head { text-align: center; max-width: 720px; margin: 0 auto 56px; }
+
+  /* ===== Feature grid ===== */
+  .grid { display: grid; gap: 24px; }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .card {
+    background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 26px; transition: all .25s;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: #bae6fd; }
+  .card .ic {
+    width: 48px; height: 48px; border-radius: 13px; display: grid; place-items: center; font-size: 22px;
+    margin-bottom: 16px;
+  }
+  .card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .card p { color: var(--muted); font-size: 14.5px; }
+  .card .tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .4px; padding: 3px 9px; border-radius: 999px; background: #ecfeff; color: var(--primary-dark); margin-left: 8px; vertical-align: middle; }
+  .ic-blue { background: #e0f2fe; }
+  .ic-violet { background: #ede9fe; }
+  .ic-green { background: #dcfce7; }
+  .ic-amber { background: #fef3c7; }
+  .ic-rose { background: #ffe4e6; }
+  .ic-cyan { background: #cffafe; }
+
+  /* ===== Workflow ===== */
+  .workflow { background: var(--bg-soft); }
+  .flow-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 40px; }
+  .flow-tab {
+    padding: 11px 26px; border-radius: 999px; font-weight: 700; font-size: 15px; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; color: var(--ink-soft); transition: all .2s;
+  }
+  .flow-tab.active { background: linear-gradient(135deg, var(--primary-light), var(--primary-dark)); color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(2,132,199,.3); }
+  .flow-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .flow-step { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  .flow-step .num {
+    width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary-dark)); color: #fff; font-weight: 800; font-size: 13px; margin-bottom: 12px;
+  }
+  .flow-step h4 { font-size: 15px; font-weight: 700; margin-bottom: 5px; }
+  .flow-step p { font-size: 13px; color: var(--muted); }
+  .flow-arrow { position: absolute; right: -16px; top: 42%; color: var(--primary-light); font-size: 18px; z-index: 2; }
+
+  /* ===== AI ===== */
+  .ai { position: relative; overflow: hidden; }
+  .ai::before { content: ""; position: absolute; inset: 0; background: radial-gradient(600px 300px at 20% 0%, rgba(14,165,233,.08), transparent); }
+  .ai .bento { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; align-items: stretch; }
+  .ai-card { border: 1px solid var(--line); border-radius: 20px; padding: 28px; background: var(--bg); }
+  .ai-card.highlight { background: linear-gradient(135deg, #0c4a6e, #075985); color: #fff; border-color: transparent; box-shadow: var(--shadow-lg); }
+  .ai-card.highlight p { color: rgba(255,255,255,.85); }
+  .ai-chat-preview { background: rgba(255,255,255,.08); border-radius: 14px; padding: 16px; margin-top: 18px; }
+  .ai-chat-preview .msg { font-size: 13.5px; padding: 9px 13px; border-radius: 12px; margin-bottom: 10px; max-width: 88%; }
+  .ai-chat-preview .msg.q { background: #0ea5e9; color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
+  .ai-chat-preview .msg.a { background: rgba(255,255,255,.14); color: #e0f2fe; border-bottom-left-radius: 4px; }
+  .ai-mini { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; margin-bottom: 14px; background: var(--bg); }
+  .ai-mini .ic { width: 44px; height: 44px; font-size: 20px; }
+  .ai-mini h4 { font-size: 15px; font-weight: 700; }
+  .ai-mini p { font-size: 13px; color: var(--muted); }
+  .ai-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: rgba(74,222,128,.15); color: #16a34a; margin-top: 8px; }
+  .ai-badge.on-dark { background: rgba(74,222,128,.2); color: #4ade80; }
+
+  /* ===== Stats band ===== */
+  .stats { background: var(--bg-grad); color: #fff; padding: 70px 0; }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; text-align: center; }
+  .stats-grid b { display: block; font-size: 40px; font-weight: 900; letter-spacing: -1px; }
+  .stats-grid span { color: rgba(255,255,255,.8); font-size: 15px; }
+
+  /* ===== Pricing ===== */
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: stretch; }
+  .price-card { position: relative; border: 1px solid var(--line); border-radius: 20px; padding: 32px 28px; background: var(--bg); transition: all .25s; }
+  .price-card:hover { box-shadow: var(--shadow-md); }
+  .price-card.featured { border: 2px solid var(--primary); box-shadow: var(--shadow-lg); }
+  .price-card .pop {
+    position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--primary-light), var(--primary-dark)); color: #fff;
+    font-size: 12px; font-weight: 800; padding: 5px 14px; border-radius: 999px; letter-spacing: .5px;
+  }
+  .price-card h3 { font-size: 18px; font-weight: 700; }
+  .price-card .price { font-size: 42px; font-weight: 900; letter-spacing: -1.5px; margin: 14px 0 4px; }
+  .price-card .price small { font-size: 15px; font-weight: 500; color: var(--muted); }
+  .price-card .desc { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .price-card ul { list-style: none; margin: 0 0 24px; }
+  .price-card ul li { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; padding: 7px 0; color: var(--ink-soft); }
+  .price-card ul li::before { content: "✓"; color: var(--primary); font-weight: 800; flex-shrink: 0; }
+  .price-card .btn { width: 100%; }
+
+  /* ===== Testimonials ===== */
+  .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .testi { border: 1px solid var(--line); border-radius: 16px; padding: 24px; background: var(--bg); }
+  .testi .stars { color: #f59e0b; letter-spacing: 2px; margin-bottom: 12px; font-size: 14px; }
+  .testi p { color: var(--ink-soft); font-size: 14.5px; font-style: italic; margin-bottom: 18px; }
+  .testi .who { display: flex; align-items: center; gap: 12px; }
+  .testi .who .av { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; }
+  .testi .who b { display: block; font-size: 14px; }
+  .testi .who small { color: var(--muted); font-size: 12.5px; }
+
+  /* ===== FAQ ===== */
+  .faq-wrap { max-width: 760px; margin: 0 auto; }
+  .faq { border: 1px solid var(--line); border-radius: 14px; margin-bottom: 12px; overflow: hidden; background: var(--bg); }
+  .faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; font-weight: 600; font-size: 15.5px; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; font-size: 22px; color: var(--primary); font-weight: 700; transition: transform .2s; }
+  .faq[open] summary::after { transform: rotate(45deg); }
+  .faq p { padding: 0 22px 18px; color: var(--muted); font-size: 14.5px; }
+
+  /* ===== CTA ===== */
+  .cta { position: relative; overflow: hidden; background: var(--bg-grad); color: #fff; text-align: center; padding: 90px 0; }
+  .cta::before { content: ""; position: absolute; width: 400px; height: 400px; background: #38bdf8; filter: blur(90px); opacity: .5; top: -120px; left: 50%; transform: translateX(-50%); }
+  .cta .container { position: relative; }
+  .cta h2 { font-size: clamp(28px, 4vw, 42px); font-weight: 900; letter-spacing: -1px; margin-bottom: 16px; }
+  .cta p { color: rgba(255,255,255,.85); max-width: 560px; margin: 0 auto 32px; font-size: 17px; }
+  .cta .btn { margin: 0 7px; }
+
+  /* ===== Footer ===== */
+  footer { background: #0b1220; color: #94a3b8; padding: 60px 0 34px; }
+  .footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 44px; }
+  .footer-grid h5 { color: #e2e8f0; font-size: 14px; margin-bottom: 16px; }
+  .footer-grid a { display: block; font-size: 14px; padding: 5px 0; transition: color .2s; }
+  .footer-grid a:hover { color: #7dd3fc; }
+  .footer-grid .brand { color: #fff; margin-bottom: 14px; }
+  .footer-grid p { font-size: 14px; max-width: 320px; }
+  .footer-bottom { border-top: 1px solid rgba(255,255,255,.08); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 13px; }
+
+  /* ===== Reveal animation ===== */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (max-width: 960px) {
+    .hero-inner { grid-template-columns: 1fr; }
+    .grid-3, .pricing-grid, .testi-grid, .stats-grid { grid-template-columns: 1fr; }
+    .flow-steps { grid-template-columns: 1fr 1fr; }
+    .ai .bento { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 560px) {
+    section { padding: 64px 0; }
+    .flow-steps { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="#top" class="brand">
+      <span class="brand-mark">C</span>
+      <span>Cargo<span><b>Flow</b></span></span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#workflow">Workflow</a>
+      <a href="#ai">AI</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-cta">
+      <a href="#pricing" class="btn btn-outline">Book a demo</a>
+      <a href="#pricing" class="btn btn-primary">Get started</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<header class="hero" id="top">
+  <div class="container hero-inner">
+    <div>
+      <span class="hero-eyebrow"><span class="dot"></span> Now with built-in AI assistant</span>
+      <h1>Run your entire import &amp; <em>export</em> operation on one platform</h1>
+      <p class="lead">
+        CargoFlow ERP takes shipments from booking to closure — import and export — with fleet
+        management, invoicing, documents, and an AI copilot that predicts delays, reads your
+        shipping documents, and answers questions about your live operations.
+      </p>
+      <div class="hero-actions">
+        <a href="#pricing" class="btn btn-white">Request a demo</a>
+        <a href="#ai" class="btn btn-ghost-light">Explore the AI features</a>
+      </div>
+      <div class="hero-proof">
+        <div class="avatars">
+          <span style="background:#0ea5e9">AO</span>
+          <span style="background:#8b5cf6">MK</span>
+          <span style="background:#22c55e">SL</span>
+          <span style="background:#f59e0b">+</span>
+        </div>
+        <small><b>Trusted by freight forwarders</b> handling thousands of containers</small>
+      </div>
+    </div>
+
+    <div class="hero-card">
+      <div class="hero-card-top">
+        <span class="brand-mark">C</span>
+        <b>CargoFlow</b>
+        <span class="dots"><i></i><i></i><i></i></span>
+      </div>
+      <div class="hero-kpi">
+        <div><b>24</b><small>Active jobs</small></div>
+        <div><b>8</b><small>Trucks on road</small></div>
+        <div><b>3</b><small>Delayed alerts</small></div>
+      </div>
+      <div class="hero-timeline">
+        <div class="t"><i>✓</i> Booking received &amp; approved <span class="bar"><i></i></span></div>
+        <div class="t"><i>✓</i> Customs permit submitted <span class="bar"><i></i></span></div>
+        <div class="t"><i>✓</i> Truck assigned · outsource <span class="bar"><i></i></span></div>
+        <div class="t dim"><i>›</i> Vessel arrival pending <span class="bar"><i></i></span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== LOGO STRIP ===== -->
+<div class="logo-strip">
+  <div class="container">
+    <small>BUILT FOR FORWARDERS, AGENTS &amp; 3PL OPERATORS</small>
+    <div class="logos">
+      <span>MSC</span><span>CMA CGM</span><span>MAERSK</span><span>ONE</span><span>HAPAG</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FEATURES ===== -->
+<section id="features">
+  <div class="container">
+    <div class="sec-head">
+      <span class="kicker">Everything you need</span>
+      <h2 class="sec-title">One platform for the whole shipment lifecycle</h2>
+      <p class="sec-sub">Stop juggling spreadsheets and WhatsApp. CargoFlow unifies every module your operations team touches daily.</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card reveal">
+        <span class="ic ic-blue">📦</span>
+        <h3>Import Management <span class="tag">CORE</span></h3>
+        <p>Full import workflow: booking receipt → approval → license &amp; permits → trucking → vessel arrival → customs clearance → delivery → container return → closure.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic ic-violet">🚢</span>
+        <h3>Export Management <span class="tag">NEW</span></h3>
+        <p>Outbound lifecycle with empty pickup, stuffing, port gate-in &amp; EIR, vessel departure, export clearance and closure — mirrored to your import process.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic ic-green">🚚</span>
+        <h3>Fleet Management</h3>
+        <p>Trucks, trailers and drivers with full document expiry tracking (IC, license), availability status and one-click assignment — internal or outsourced to vendors.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic ic-amber">🧾</span>
+        <h3>Invoicing &amp; Billing</h3>
+        <p>Per-job invoices with line items, COA mapping, tax calculation, and status workflow. Link revenue straight to the shipment.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic ic-rose">🗂️</span>
+        <h3>Documents &amp; Templates</h3>
+        <p>Attach BLs, packing lists and permits per job. Reuse shipment templates to book routine cargo in seconds.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic ic-cyan">🧭</span>
+        <h3>Master Data &amp; Settings</h3>
+        <p>Centralize customers, vendors, locations, items/services and company settings with credit terms and COA codes.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic ic-blue">🔍</span>
+        <h3>Search &amp; Alerts</h3>
+        <p>Global search across jobs, trucks, customers and vendors. Real-time alerts for past ETA/ETD and expiring driver documents.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic ic-violet">👥</span>
+        <h3>Roles &amp; Approvals</h3>
+        <p>JWT security with admin, manager and staff roles. Approvals, rejections and destructive actions are gated by role.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic ic-green">📈</span>
+        <h3>Reports &amp; Dashboard</h3>
+        <p>Live KPI dashboard, calendar view, printable job cards and an AI-generated weekly operations report.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WORKFLOW ===== -->
+<section class="workflow" id="workflow">
+  <div class="container">
+    <div class="sec-head">
+      <span class="kicker">How it works</span>
+      <h2 class="sec-title">A guided workflow, end to end</h2>
+      <p class="sec-sub">Every shipment moves through a clearly defined pipeline. Teams always know what's next — and what's blocking progress.</p>
+    </div>
+    <div class="flow-tabs">
+      <button class="flow-tab active" data-flow="import">Import flow</button>
+      <button class="flow-tab" data-flow="export">Export flow</button>
+    </div>
+    <div class="flow-steps" id="flow-steps">
+      <!-- injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ===== AI ===== -->
+<section class="ai" id="ai">
+  <div class="container">
+    <div class="sec-head">
+      <span class="kicker">Built-in AI · Ollama powered</span>
+      <h2 class="sec-title">Your AI copilot for logistics operations</h2>
+      <p class="sec-sub">A private, self-hosted AI that lives with your data — no external APIs, fully under your control.</p>
+    </div>
+    <div class="bento">
+      <div class="ai-card highlight reveal">
+        <span class="ic ic-blue">🤖</span>
+        <h3>CargoFlow AI Assistant</h3>
+        <p>Ask anything in plain language and get answers from your live operations. Works even when the AI engine is offline.</p>
+        <div class="ai-chat-preview">
+          <div class="msg q">Which jobs are delayed this week?</div>
+          <div class="msg a">3 import jobs are past ETA and 1 export job is past ETD. The longest delay is IMP-0821 at 6 days on vessel "MSC ALTAIR".</div>
+          <div class="msg q">How many trucks are available today?</div>
+          <div class="msg a">8 of 12 trucks are available, with 4 assigned to active shipments.</div>
+        </div>
+        <span class="ai-badge on-dark">● AI ONLINE — OLLAMA</span>
+      </div>
+      <div>
+        <div class="ai-mini reveal">
+          <span class="ic ic-violet">🖨️</span>
+          <div>
+            <h4>Document OCR extraction</h4>
+            <p>Upload a PDF or photo of a BL and the vision model extracts container, vessel, dates and parties — then apply it to the job in one click.</p>
+          </div>
+        </div>
+        <div class="ai-mini reveal">
+          <span class="ic ic-green">⏱️</span>
+          <div>
+            <h4>Delay &amp; ETA prediction</h4>
+            <p>Historical patterns turn into predicted arrival/departure dates with a delay-risk score and confidence level.</p>
+          </div>
+        </div>
+        <div class="ai-mini reveal">
+          <span class="ic ic-amber">📊</span>
+          <div>
+            <h4>Weekly AI reports</h4>
+            <p>An auto-generated narrative of your week — new jobs, revenue, bottlenecks and recommended actions.</p>
+          </div>
+        </div>
+        <div class="ai-mini reveal">
+          <span class="ic ic-rose">💡</span>
+          <div>
+            <h4>Smart job assist</h4>
+            <p>Detects missing fields, stuck jobs, missed ETAs and surfaces the exact next step to keep shipments moving.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STATS ===== -->
+<section class="stats">
+  <div class="container stats-grid">
+    <div><b>6</b><span>Modular services</span></div>
+    <div><b>60+</b><span>API endpoints</span></div>
+    <div><b>24/7</b><span>Self-hosted AI</span></div>
+    <div><b>0</b><span>External data required</span></div>
+  </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section id="pricing">
+  <div class="container">
+    <div class="sec-head">
+      <span class="kicker">Pricing</span>
+      <h2 class="sec-title">Simple plans that scale with you</h2>
+      <p class="sec-sub">From a single freight desk to a full multi-branch operations team.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card reveal">
+        <h3>Starter</h3>
+        <div class="price">$99<small>/month</small></div>
+        <p class="desc">For small forwarders getting off spreadsheets.</p>
+        <ul>
+          <li>Up to 5 users</li>
+          <li>Import &amp; export workflows</li>
+          <li>Fleet management</li>
+          <li>Master data (customers, vendors)</li>
+          <li>Email support</li>
+        </ul>
+        <a href="#faq" class="btn btn-outline">Start free trial</a>
+      </div>
+      <div class="price-card featured reveal">
+        <span class="pop">MOST POPULAR</span>
+        <h3>Business</h3>
+        <div class="price">$249<small>/month</small></div>
+        <p class="desc">For growing teams that need the full picture.</p>
+        <ul>
+          <li>Up to 25 users</li>
+          <li>Everything in Starter</li>
+          <li>Invoicing &amp; billing</li>
+          <li>Documents &amp; templates</li>
+          <li>AI assistant, reports &amp; predictions</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#faq" class="btn btn-primary">Start free trial</a>
+      </div>
+      <div class="price-card reveal">
+        <h3>Enterprise</h3>
+        <div class="price">Custom</div>
+        <p class="desc">For multi-branch operators with specific needs.</p>
+        <ul>
+          <li>Unlimited users</li>
+          <li>Everything in Business</li>
+          <li>On-premise / private-cloud hosting</li>
+          <li>Custom integrations &amp; workflows</li>
+          <li>Dedicated success manager</li>
+        </ul>
+        <a href="#faq" class="btn btn-outline">Talk to sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section style="background: var(--bg-soft)">
+  <div class="container">
+    <div class="sec-head">
+      <span class="kicker">Testimonials</span>
+      <h2 class="sec-title">Loved by operations teams</h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi reveal">
+        <div class="stars">★★★★★</div>
+        <p>"We closed the loop on import and export in one system. The AI copilot reads our BLs and predicts delays before our customers even ask."</p>
+        <div class="who">
+          <span class="av" style="background:#0ea5e9">SA</span>
+          <div><b>Sophea A.</b><small>Operations Manager, Forwarder Co.</small></div>
+        </div>
+      </div>
+      <div class="testi reveal">
+        <div class="stars">★★★★★</div>
+        <p>"Driver document expiry alerts alone save us from port fines. The workflow approvals keep our team honest and our managers informed."</p>
+        <div class="who">
+          <span class="av" style="background:#8b5cf6">MR</span>
+          <div><b>Meng R.</b><small>Head of Trucking, Pacific Freight</small></div>
+        </div>
+      </div>
+      <div class="testi reveal">
+        <div class="stars">★★★★★</div>
+        <p>"The AI weekly report is like a free consultant. It tells us where shipments are stuck so we can act — not guess."</p>
+        <div class="who">
+          <span class="av" style="background:#22c55e">DK</span>
+          <div><b>Dara K.</b><small>Managing Director, Mekong Logistics</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section id="faq">
+  <div class="container">
+    <div class="sec-head">
+      <span class="kicker">FAQ</span>
+      <h2 class="sec-title">Frequently asked questions</h2>
+    </div>
+    <div class="faq-wrap">
+      <details class="faq">
+        <summary>Is our data safe and private?</summary>
+        <p>Yes. CargoFlow runs on your own infrastructure. All AI inference happens locally with self-hosted models — your shipment data never leaves your network.</p>
+      </details>
+      <details class="faq">
+        <summary>Do I need an internet connection for the AI features?</summary>
+        <p>No. The AI assistant, OCR extraction, predictions and reports run on local models via Ollama. When the AI service is offline, every feature falls back to a built-in rule-based mode.</p>
+      </details>
+      <details class="faq">
+        <summary>Can I track both imports and exports?</summary>
+        <p>Absolutely. Both flows are first-class citizens with their own status pipelines, documents, activity logs and reports — plus AI assistance on both.</p>
+      </details>
+      <details class="faq">
+        <summary>Can we use our own trucks or outsource to vendors?</summary>
+        <p>Both. Assign internal trucks, trailers and drivers directly, or mark a shipment as outsourced and link it to an approved vendor.</p>
+      </details>
+      <details class="faq">
+        <summary>Is there a trial period?</summary>
+        <p>Yes — every plan starts with a 14-day free trial. No credit card required, and a guided onboarding call is included.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta">
+  <div class="container">
+    <h2>Ready to take your operations to the next level?</h2>
+    <p>Book a live demo and see how CargoFlow turns shipping chaos into a clear, trackable pipeline.</p>
+    <a href="#pricing" class="btn btn-white">Request a demo</a>
+    <a href="#faq" class="btn btn-ghost-light">Talk to sales</a>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a href="#top" class="brand">
+          <span class="brand-mark">C</span>
+          <span>CargoFlow</span>
+        </a>
+        <p>The import &amp; export management platform with a built-in AI copilot — built for freight forwarders, agents and 3PL operators.</p>
+      </div>
+      <div>
+        <h5>Product</h5>
+        <a href="#features">Features</a>
+        <a href="#workflow">Workflow</a>
+        <a href="#ai">AI capabilities</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div>
+        <h5>Company</h5>
+        <a href="#">About us</a>
+        <a href="#">Careers</a>
+        <a href="#">Contact</a>
+        <a href="#">Privacy policy</a>
+      </div>
+      <div>
+        <h5>Get in touch</h5>
+        <a href="mailto:sales@cargoflow.app">sales@cargoflow.app</a>
+        <a href="#">Book a demo</a>
+        <a href="#">Documentation</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 CargoFlow ERP. All rights reserved.</span>
+      <span>CargoFlow ERP · Import &amp; Export Management System</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Workflow tabs
+  const FLOWS = {
+    import: [
+      ["Booking received", "Container, vessel, ETA and BL captured"],
+      ["Approval & team", "Approve the job and assign operations team"],
+      ["License & permits", "Apply license and submit customs permit"],
+      ["Truck assignment", "Internal truck or outsourced to vendor"],
+      ["Vessel arrival", "Record ATA at port of discharge"],
+      ["Customs clearance", "Inspection, duties and release"],
+      ["Delivery", "Pick up, deliver and confirm unloading"],
+      ["Completion", "Return container and close the job"]
+    ],
+    export: [
+      ["Outbound booking", "Container, vessel, ETD and BL captured"],
+      ["Approval & team", "Approve the job and assign operations team"],
+      ["License & permits", "Apply export license and customs permit"],
+      ["Empty pickup", "Pick up the empty container from depot"],
+      ["Stuffing", "Confirm cargo stuffing at shipper"],
+      ["Gate-in & EIR", "Record port gate-in with EIR number"],
+      ["Vessel departure", "Record ATD of the outbound vessel"],
+      ["Clearance & close", "Export clearance then close the job"]
+    ]
+  };
+  function renderFlow(name) {
+    const steps = FLOWS[name];
+    const el = document.getElementById('flow-steps');
+    el.innerHTML = steps.map((s, i) => `
+      <div class="flow-step">
+        ${i < steps.length - 1 ? '<span class="flow-arrow">›</span>' : ''}
+        <div class="num">${i + 1}</div>
+        <h4>${s[0]}</h4>
+        <p>${s[1]}</p>
+      </div>`).join('');
+  }
+  document.querySelectorAll('.flow-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.flow-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderFlow(tab.dataset.flow);
+    });
+  });
+  renderFlow('import');
+
+  // Reveal on scroll
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
