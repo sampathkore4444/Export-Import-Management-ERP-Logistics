@@ -9,7 +9,7 @@ CargoFlow ERP — Import/Export Management System
 Web-based Enterprise Resource Planning (ERP) Module
 
 ### Core Functionality
-A comprehensive import/export management system that handles the complete lifecycle of both **import operations** (booking receipt → job closure) and **export operations** (outbound shipment booking → vessel departure → clearance), including truck/trailer/driver management, vendor/customer management, location tracking, invoicing, job templates, document management, activity logging, and **AI-powered assistants** (chat, document OCR extraction, delay/ETA prediction, weekly reports, and smart job suggestions).
+A comprehensive import/export management system that handles the complete lifecycle of both **import operations** (booking receipt → job closure) and **export operations** (outbound shipment booking → vessel departure → clearance), including truck/trailer/driver management, vendor/customer management, location tracking, invoicing, job templates, document management, activity logging, **AI-powered assistants** (chat, document OCR extraction, delay/ETA prediction, weekly reports, and smart job suggestions), plus **advanced modules**: finance & profitability, container tracking, air freight (AWB), warehouse & inventory, and structured export documentation (commercial invoices & packing lists).
 
 ### Target Users
 - Operations Staff
