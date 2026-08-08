@@ -185,6 +185,31 @@ All AI endpoints live in the **AI Service** and call **Ollama** locally. If Olla
 - Real-time notifications: driver ID/license expiry (30-day window), past ETA (import) and past ETD (export) alerts
 - Global search across jobs, trucks, customers and vendors
 
+### 3.5 Plan-Based Feature Gating (NEW)
+
+Selling tiers (Starter / Business / Enterprise) control which modules and features a tenant can use. Enforcement is server-side; the UI only reflects the backend rule.
+
+**Plans & limits**
+
+| Plan | Included features | Max users |
+|------|-------------------|-----------|
+| `starter` | import, export, fleet, master-data | 5 |
+| `business` | + invoicing, documents, templates, ai | 25 |
+| `enterprise` | everything | unlimited |
+
+**Enforcement points**
+
+1. **Plan storage** — `plan` column on `users` in the auth-service (default `starter`); embedded in the JWT claims at login/refresh (`plan`, plus existing `role`/`user_id`).
+2. **API Gateway** — the single enforcement choke point for all `/api/*` traffic:
+   - Decodes the bearer JWT using the shared `SECRET_KEY`/`ALGORITHM`.
+   - Maps the request path to a feature via `ROUTE_FEATURES` (e.g. `/api/ai` → `ai`, `/api/invoices` → `invoicing`, `/api/templates` → `templates`, `/api/documents*` → `documents`).
+   - Returns `403` when the user's plan does not include the requested feature.
+   - Injects `X-User-Plan`, `X-User-Role`, `X-User-Id` headers downstream for services that need them.
+3. **User count limits** — enforced in the auth-service `register` and user-update endpoints (`PLAN_MAX_USERS`): rejecting creation/assignment when the target plan's user cap is reached.
+4. **Frontend** — plan-aware: hides sidebar links (Templates, AI Reports, Invoices) and the AI chat widget when the plan lacks the feature, renders a locked/upgrade panel in `AIAssistPanel`, and gates routes via `PlanGate`. The upgrade prompt links to `sales@cargoflow.app`.
+
+**Plan switching** — admins change a user's plan from User Management (PUT `/api/auth/users/{id}`). The new plan takes effect on that user's next login or token refresh.
+
 ---
 
 ## 4. API Specification

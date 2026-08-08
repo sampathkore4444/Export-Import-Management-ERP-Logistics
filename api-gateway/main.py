@@ -1,7 +1,9 @@
+import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import httpx
 from fastapi.middleware.cors import CORSMiddleware
+from jose import jwt as jose_jwt
 
 app = FastAPI(title="ERP API Gateway", version="1.0.0")
 
@@ -13,18 +15,77 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+SECRET_KEY = os.environ.get("SECRET_KEY", "your-secret-key-change-in-production")
+ALGORITHM = os.environ.get("ALGORITHM", "HS256")
+
+PLAN_FEATURES = {
+    "starter": {"import", "export", "fleet", "master-data"},
+    "business": {"import", "export", "fleet", "master-data", "invoicing", "documents", "templates", "ai"},
+    "enterprise": {"import", "export", "fleet", "master-data", "invoicing", "documents", "templates", "ai"},
+}
+
+ROUTE_FEATURES = [
+    ("/api/ai", "ai"),
+    ("/api/invoices", "invoicing"),
+    ("/api/templates", "templates"),
+    ("/api/export-documents", "documents"),
+    ("/api/documents", "documents"),
+    ("/api/exports", "export"),
+    ("/api/jobs", "import"),
+    ("/api/trucks", "fleet"),
+    ("/api/trailers", "fleet"),
+    ("/api/drivers", "fleet"),
+    ("/api/locations", "master-data"),
+    ("/api/vendors", "master-data"),
+    ("/api/customers", "master-data"),
+    ("/api/items", "master-data"),
+    ("/api/settings", "master-data"),
+]
+
+
+def route_feature(path: str):
+    for prefix, feature in ROUTE_FEATURES:
+        if path == prefix or path.startswith(prefix + "/"):
+            return feature
+    return None
+
+
+def bearer_claims(request: Request):
+    auth = request.headers.get("authorization", "")
+    if not auth.lower().startswith("bearer "):
+        return None
+    try:
+        return jose_jwt.decode(auth.split(" ", 1)[1], SECRET_KEY, algorithms=[ALGORITHM])
+    except Exception:
+        return None
+
 AUTH_SERVICE = "http://localhost:8001"
 IMPORT_SERVICE = "http://localhost:8002"
 FLEET_SERVICE = "http://localhost:8003"
 MASTER_DATA_SERVICE = "http://localhost:8004"
 AI_SERVICE = "http://localhost:8005"
 
+
 async def proxy(request: Request, service_url: str):
     path = request.url.path
     method = request.method
     headers = dict(request.headers)
     headers.pop("host", None)
-    
+
+    claims = bearer_claims(request)
+    feature = route_feature(path)
+    if feature and claims:
+        plan = claims.get("plan", "starter")
+        if feature not in PLAN_FEATURES.get(plan, set()):
+            return JSONResponse(
+                {"error": f"'{feature}' features are not included in your current plan", "plan": plan, "feature": feature},
+                status_code=403,
+            )
+    if claims:
+        headers["X-User-Plan"] = claims.get("plan", "starter")
+        headers["X-User-Role"] = claims.get("role", "staff")
+        headers["X-User-Id"] = claims.get("user_id", "")
+
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             url = f"{service_url}{path}"
@@ -40,7 +101,7 @@ async def proxy(request: Request, service_url: str):
                 response = await client.delete(url, headers=headers)
             else:
                 return JSONResponse({"error": "Method not supported"}, status_code=405)
-            
+
             return JSONResponse(content=response.json(), status_code=response.status_code)
     except httpx.ConnectError as e:
         return JSONResponse({"error": f"Service at {service_url} is unavailable", "details": str(e)}, status_code=503)

@@ -1348,3 +1348,21 @@ body.dark-mode .ai-suggestion { background: rgba(255,255,255,0.06); }
 body.dark-mode .ai-chip { color: var(--primary-light); }
 body.dark-mode .ai-suggestion button { color: var(--primary-light); }
 
+
+.badge-info {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.user-plan {
+  color: var(--primary-light, #38bdf8);
+  font-weight: 700;
+}
+
+.ai-assist-locked {
+  text-align: center;
+  padding: 28px 20px;
+  color: var(--muted, #64748b);
+}
+.ai-assist-locked p { margin-top: 8px; font-size: 13.5px; }

@@ -10,6 +10,7 @@ interface User {
   email: string
   full_name: string
   role: string
+  plan: string
 }
 
 interface AuthContextType {
@@ -33,6 +34,14 @@ const useAuth = () => {
 
 const canManage = (user: User | null) => user?.role === 'admin' || user?.role === 'manager'
 const isAdmin = (user: User | null) => user?.role === 'admin'
+
+const PLAN_FEATURES: Record<string, string[]> = {
+  starter: ['import', 'export', 'fleet', 'master-data'],
+  business: ['import', 'export', 'fleet', 'master-data', 'invoicing', 'documents', 'templates', 'ai'],
+  enterprise: ['import', 'export', 'fleet', 'master-data', 'invoicing', 'documents', 'templates', 'ai'],
+}
+const canUse = (user: User | null, feature: string) => !!user && (PLAN_FEATURES[user.plan] || []).includes(feature)
+const planLabel = (plan?: string) => plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : 'Starter'
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -3098,7 +3107,7 @@ function Users() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [formData, setFormData] = useState({ username: '', email: '', full_name: '', role: 'staff', password: '', is_active: true })
+  const [formData, setFormData] = useState({ username: '', email: '', full_name: '', role: 'staff', plan: 'starter', password: '', is_active: true })
 
   const loadUsers = () => {
     axios.get(`${API_BASE}/auth/users`)
@@ -3123,7 +3132,7 @@ function Users() {
       }
       setShowForm(false)
       setEditingId(null)
-      setFormData({ username: '', email: '', full_name: '', role: 'staff', password: '', is_active: true })
+      setFormData({ username: '', email: '', full_name: '', role: 'staff', plan: 'starter', password: '', is_active: true })
       loadUsers()
     } catch (err: any) {
       alert(err.response?.data?.detail || (editingId ? 'Failed to update user' : 'Failed to create user'))
@@ -3137,6 +3146,7 @@ function Users() {
       email: user.email || '',
       full_name: user.full_name || '',
       role: user.role || 'staff',
+      plan: user.plan || 'starter',
       password: '',
       is_active: user.is_active
     })
@@ -3156,7 +3166,7 @@ function Users() {
   const cancelEdit = () => {
     setShowForm(false)
     setEditingId(null)
-    setFormData({ username: '', email: '', full_name: '', role: 'staff', password: '', is_active: true })
+    setFormData({ username: '', email: '', full_name: '', role: 'staff', plan: 'starter', password: '', is_active: true })
   }
 
   return (
@@ -3198,6 +3208,14 @@ function Users() {
                   <option value="staff">Staff</option>
                 </select>
               </div>
+              <div className="form-group">
+                <label className="form-label">Plan</label>
+                <select className="form-select" value={formData.plan} onChange={e => setFormData({...formData, plan: e.target.value})}>
+                  <option value="starter">Starter</option>
+                  <option value="business">Business</option>
+                  <option value="enterprise">Enterprise</option>
+                </select>
+              </div>
               {!editingId && (
                 <div className="form-group">
                   <label className="form-label">Password *</label>
@@ -3232,9 +3250,9 @@ function Users() {
         ) : (
           <div className="table-container">
             <table className="table">
-              <thead><tr><th>Username</th><th>Email</th><th>Full Name</th><th>Role</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Username</th><th>Email</th><th>Full Name</th><th>Role</th><th>Plan</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
               <tbody>{users.map(u => (
-                <tr key={u.id}><td><strong>{u.username}</strong></td><td>{u.email}</td><td>{u.full_name || '-'}</td><td><span className={`badge ${u.role === 'admin' ? 'badge-danger' : u.role === 'manager' ? 'badge-warning' : 'badge-approved'}`}>{u.role}</span></td><td><span className={`badge ${u.is_active ? 'badge-approved' : 'badge-pending'}`}>{u.is_active ? 'Active' : 'Inactive'}</span></td><td>{new Date(u.created_at).toLocaleDateString()}</td><td><div className="flex gap-2"><button onClick={() => handleEdit(u)} className="btn btn-outline btn-sm">Edit</button><button onClick={() => handleDelete(u.id)} className="btn btn-danger btn-sm">Delete</button></div></td></tr>
+                <tr key={u.id}><td><strong>{u.username}</strong></td><td>{u.email}</td><td>{u.full_name || '-'}</td><td><span className={`badge ${u.role === 'admin' ? 'badge-danger' : u.role === 'manager' ? 'badge-warning' : 'badge-approved'}`}>{u.role}</span></td><td><span className="badge badge-info">{planLabel(u.plan)}</span></td><td><span className={`badge ${u.is_active ? 'badge-approved' : 'badge-pending'}`}>{u.is_active ? 'Active' : 'Inactive'}</span></td><td>{new Date(u.created_at).toLocaleDateString()}</td><td><div className="flex gap-2"><button onClick={() => handleEdit(u)} className="btn btn-outline btn-sm">Edit</button><button onClick={() => handleDelete(u.id)} className="btn btn-danger btn-sm">Delete</button></div></td></tr>
               ))}</tbody>
             </table>
           </div>
@@ -4352,18 +4370,22 @@ function Layout({ children }: { children: React.ReactNode }) {
               Calendar
             </Link>
           </li>
-          <li className="nav-item">
-            <Link to="/templates" className="nav-link">
-              <span className="nav-icon">&#128196;</span>
-              Templates
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/ai-reports" className="nav-link">
-              <span className="nav-icon">&#129302;</span>
-              AI Reports
-            </Link>
-          </li>
+          {canUse(user, 'templates') && (
+            <li className="nav-item">
+              <Link to="/templates" className="nav-link">
+                <span className="nav-icon">&#128196;</span>
+                Templates
+              </Link>
+            </li>
+          )}
+          {canUse(user, 'ai') && (
+            <li className="nav-item">
+              <Link to="/ai-reports" className="nav-link">
+                <span className="nav-icon">&#129302;</span>
+                AI Reports
+              </Link>
+            </li>
+          )}
           <li className="nav-section">Operations</li>
           <li className="nav-item">
             <Link to="/jobs" className="nav-link">
@@ -4377,12 +4399,14 @@ function Layout({ children }: { children: React.ReactNode }) {
               Export Jobs
             </Link>
           </li>
-          <li className="nav-item">
-            <Link to="/invoices" className="nav-link">
-              <span className="nav-icon">&#128176;</span>
-              Invoices
-            </Link>
-          </li>
+          {canUse(user, 'invoicing') && (
+            <li className="nav-item">
+              <Link to="/invoices" className="nav-link">
+                <span className="nav-icon">&#128176;</span>
+                Invoices
+              </Link>
+            </li>
+          )}
           <li className="nav-section">Fleet Management</li>
           <li className="nav-item">
             <Link to="/trucks" className="nav-link">
@@ -4449,7 +4473,7 @@ function Layout({ children }: { children: React.ReactNode }) {
             <div className="user-avatar">{(user?.full_name || user?.username || 'U').charAt(0).toUpperCase()}</div>
             <div className="user-details">
               <div className="user-name">{user?.full_name || user?.username}</div>
-              <div className="user-role">{user?.role || 'Staff'}</div>
+              <div className="user-role">{user?.role || 'Staff'} · <span className="user-plan">{planLabel(user?.plan)}</span></div>
             </div>
           </div>
           <button onClick={logout} className="btn btn-outline" style={{ width: '100%', color: 'var(--sidebar-text)', borderColor: 'rgba(255,255,255,0.2)' }}>Sign Out</button>
@@ -4485,7 +4509,7 @@ function Layout({ children }: { children: React.ReactNode }) {
         <Notifications notifications={notifications} onDismiss={dismissNotification} />
         {children}
       </main>
-      <AIAssistant />
+      {canUse(user, 'ai') && <AIAssistant />}
     </div>
   )
 }
@@ -4584,12 +4608,23 @@ function AIAssistant() {
 }
 
 function AIAssistPanel({ jobId, jobType, onAction, onUpdated }: { jobId: string; jobType: 'import' | 'export'; onAction: (action: string) => void; onUpdated: () => void }) {
+  const { user } = useAuth()
   const [assist, setAssist] = useState<any>(null)
   const [prediction, setPrediction] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [ocrBusy, setOcrBusy] = useState(false)
   const [ocrResult, setOcrResult] = useState<any>(null)
   const [applying, setApplying] = useState(false)
+
+  if (!canUse(user, 'ai')) {
+    return (
+      <div className="card ai-assist-locked">
+        <div style={{ fontSize: '26px', marginBottom: '8px' }}>&#128274;</div>
+        <strong>AI job assist</strong>
+        <p>Smart predictions, OCR and next-step suggestions are included with the <b>Business</b> plan and above.</p>
+      </div>
+    )
+  }
 
   const load = () => {
     setLoading(true)
@@ -4778,6 +4813,29 @@ function AIReports() {
   )
 }
 
+function PlanGate({ feature, children }: { feature: string; children: React.ReactNode }) {
+  const { user } = useAuth()
+  return (
+    <Layout>
+      {canUse(user, feature) ? children : (
+        <div className="page-container">
+          <div className="card" style={{ textAlign: 'center', padding: '60px 24px' }}>
+            <div style={{ fontSize: '44px', marginBottom: '12px' }}>&#128274;</div>
+            <h1 className="page-title" style={{ marginBottom: '8px' }}>This feature requires an upgrade</h1>
+            <p className="page-subtitle" style={{ maxWidth: '520px', margin: '0 auto 20px' }}>
+              Your current <b>{planLabel(user?.plan)}</b> plan does not include this module.
+              Upgrade to Business or Enterprise to unlock it.
+            </p>
+            <a className="btn btn-primary" href="#/" onClick={(e) => { e.preventDefault(); alert('Contact sales at sales@cargoflow.app to upgrade your plan.') }}>
+              Contact sales to upgrade
+            </a>
+          </div>
+        </div>
+      )}
+    </Layout>
+  )
+}
+
 function App() {
   const { token, user } = useAuth()
 
@@ -4796,7 +4854,7 @@ function App() {
         <Route path="/exports" element={<Layout><ExportJobList /></Layout>} />
         <Route path="/exports/new" element={<Layout><CreateExportJob /></Layout>} />
         <Route path="/exports/:id" element={<Layout><ExportJobDetail /></Layout>} />
-        <Route path="/invoices" element={<Layout><Invoices /></Layout>} />
+        <Route path="/invoices" element={<PlanGate feature="invoicing"><Invoices /></PlanGate>} />
         <Route path="/trucks" element={<Layout><Trucks /></Layout>} />
         <Route path="/trailers" element={<Layout><Trailers /></Layout>} />
         <Route path="/drivers" element={<Layout><Drivers /></Layout>} />
@@ -4807,8 +4865,8 @@ function App() {
         <Route path="/users" element={isAdmin(user) ? <Layout><Users /></Layout> : <Navigate to="/" />} />
         <Route path="/settings" element={<Layout><CompanySettings /></Layout>} />
         <Route path="/calendar" element={<Layout><CalendarView /></Layout>} />
-        <Route path="/templates" element={<Layout><JobTemplates /></Layout>} />
-        <Route path="/ai-reports" element={<Layout><AIReports /></Layout>} />
+        <Route path="/templates" element={<PlanGate feature="templates"><JobTemplates /></PlanGate>} />
+        <Route path="/ai-reports" element={<PlanGate feature="ai"><AIReports /></PlanGate>} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>

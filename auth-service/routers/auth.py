@@ -17,6 +17,22 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 ADMIN_ONLY = ["admin"]
 
+PLAN_MAX_USERS = {"starter": 5, "business": 25, "enterprise": None}
+
+
+def _enforce_plan_limit(db: Session, plan: str, exclude_user_id: UUID | None = None):
+    max_users = PLAN_MAX_USERS.get(plan)
+    if max_users is None:
+        return
+    query = db.query(User).filter(User.plan == plan)
+    if exclude_user_id:
+        query = query.filter(User.id != exclude_user_id)
+    if query.count() >= max_users:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Plan '{plan}' allows a maximum of {max_users} users",
+        )
+
 @router.get("/users", response_model=List[UserResponse])
 def list_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: User = Depends(require_roles(*ADMIN_ONLY))):
     return db.query(User).offset(skip).limit(limit).all()
@@ -74,6 +90,8 @@ def register(user: UserCreate, db: Session = Depends(get_db), current_user: User
         if current_user is None or current_user.role != "admin":
             raise HTTPException(status_code=403, detail="Insufficient permissions: admin required")
 
+    _enforce_plan_limit(db, user.plan)
+
     db_user = db.query(User).filter(User.username == user.username).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
@@ -87,7 +105,8 @@ def register(user: UserCreate, db: Session = Depends(get_db), current_user: User
         email=user.email,
         password_hash=hashed_password,
         full_name=user.full_name,
-        role=user.role
+        role=user.role,
+        plan=user.plan
     )
     db.add(new_user)
     db.commit()
@@ -103,8 +122,12 @@ def update_user(user_id: str, user_update: UserUpdate, db: Session = Depends(get
     user = db.query(User).filter(User.id == UUID(user_id)).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
-    for key, value in user_update.model_dump(exclude_unset=True).items():
+
+    update_data = user_update.model_dump(exclude_unset=True)
+    if "plan" in update_data and update_data["plan"] != user.plan:
+        _enforce_plan_limit(db, update_data["plan"], exclude_user_id=user.id)
+
+    for key, value in update_data.items():
         setattr(user, key, value)
     
     db.commit()

@@ -38,6 +38,7 @@ def create_user_token(user: User) -> str:
             "sub": user.username,
             "role": user.role,
             "user_id": str(user.id),
+            "plan": user.plan,
         }
     )
 
