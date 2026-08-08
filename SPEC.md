@@ -133,7 +133,7 @@ All AI endpoints live in the **AI Service** and call **Ollama** locally. If Olla
 
 #### 3.3.1 AI Chat Assistant
 - Natural-language assistant over live ERP data
-- Auto-detects intent (jobs, exports, fleet, invoices, customers, vendors, items) and pulls relevant context
+- Auto-detects intent (jobs, exports, fleet, invoices, quotations, vendor bills, finance analytics, containers, air jobs, warehouse inventory, customers, vendors, items) and pulls relevant context
 - Answers via `qwen2.5:1.5b` (configurable); falls back to live summary stats when offline
 - Accessible from every page via a floating chat widget
 
@@ -1138,6 +1138,15 @@ GATE_IN → VESSEL_DEPARTED → EXPORT_CLEARED → CLOSED
 Branches: REJECTED (from PENDING_APPROVAL)
 ```
 
+### 6.5 Air Job Status Flow
+
+```
+PENDING_APPROVAL → APPROVED → TEAM_ASSIGNED → (LICENSE_APPROVED) →
+PERMIT_SUBMITTED → FLIGHT_DEPARTED → FLIGHT_ARRIVED → CLOSED
+
+Branches: REJECTED (from PENDING_APPROVAL)
+```
+
 ---
 
 ## 7. Acceptance Criteria
@@ -1189,6 +1198,37 @@ Branches: REJECTED (from PENDING_APPROVAL)
 - [ ] JWT-based authentication
 - [ ] Role-based access control (admin/manager/staff), admin-only destructive actions
 
+### 7.8 Finance & Profitability (NEW)
+- [ ] User can create quotations with line items and auto-calculated totals
+- [ ] Manager can convert an accepted quotation into an invoice
+- [ ] User can create vendor bills and record job costs against import/export jobs
+- [ ] User can record payments; invoice status auto-updates to PARTIAL/PAID
+- [ ] Profitability endpoint reports revenue, costs, profit and margin per job
+- [ ] Finance analytics shows 30-day KPIs and top customers by revenue
+
+### 7.9 Container Tracking (NEW)
+- [ ] User can register containers and search/filter the registry
+- [ ] Container creation and status changes are auto-logged as events
+- [ ] User can add manual events linked to a job and view full event history
+- [ ] In-transit containers are filterable via dedicated endpoint
+
+### 7.10 Air Freight / AWB (NEW)
+- [ ] User can create air jobs with AWB details and search/filter the list
+- [ ] Air job status flows through approve/reject/assign-team/license/permit/departure/arrival/close
+- [ ] Every air job action is recorded in the activity log
+- [ ] User can upload/list/delete air documents (base64)
+
+### 7.11 Warehouse & Inventory (NEW)
+- [ ] User can manage warehouses and inventory items
+- [ ] Inventory status auto-updates between IN_STOCK / LOW_STOCK / OUT_OF_STOCK
+- [ ] Stock IN/OUT movements adjust quantities; OUT rejects insufficient stock
+- [ ] Inventory summary reports totals and low/out-of-stock counts
+
+### 7.12 Structured Export Documentation (NEW)
+- [ ] User can create/manage a commercial invoice per export job with HS-coded lines
+- [ ] User can create/manage a packing list per export job with weights/dimensions
+- [ ] Shipper/consignee defaults come from the linked export job
+
 ---
 
 ## 8. Project Structure
@@ -1208,15 +1248,22 @@ erp-system/
 │   ├── schemas/
 │   └── requirements.txt
 ├── import-service/
-│   ├── main.py              # import + export + invoices + templates + documents
+│   ├── main.py              # import + export + invoices + templates + documents +
+│   │                        # finance + containers + air + export structured docs
 │   ├── database/
 │   │   ├── database.py
 │   │   └── security.py
 │   ├── models/models.py     # ImportJob, ExportJob, ActivityLog, ExportActivityLog,
-│   │                        # JobDocument, ExportDocument, JobTemplate, Invoice, InvoiceLine
+│   │                        # JobDocument, ExportDocument, JobTemplate, Invoice, InvoiceLine,
+│   │                        # Quotation, VendorBill, JobCost, Payment, Container, AirJob,
+│   │                        # ExportCommercialInvoice, ExportPackingList
 │   ├── routers/
 │   │   ├── jobs.py
-│   │   └── exports.py
+│   │   ├── exports.py
+│   │   ├── finance.py       # quotations, vendor bills, job costs, payments, profitability
+│   │   ├── containers.py    # container registry + events
+│   │   ├── air.py           # air jobs (AWB) + activity logs + documents
+│   │   └── export_docs.py   # commercial invoices + packing lists
 │   ├── schemas/schemas.py
 │   └── requirements.txt
 ├── fleet-service/
@@ -1232,6 +1279,15 @@ erp-system/
 │   ├── models/
 │   ├── routers/
 │   ├── schemas/
+│   └── requirements.txt
+├── warehouse-service/       # NEW (port 8006, DB erp_warehouse)
+│   ├── main.py              # warehouses + inventory + stock movements
+│   ├── database/
+│   │   ├── database.py      # erp_warehouse
+│   │   └── security.py
+│   ├── models/models.py     # Warehouse, InventoryItem, StockMovement
+│   ├── routers/warehouse.py
+│   ├── schemas/schemas.py
 │   └── requirements.txt
 ├── ai-service/
 │   ├── main.py              # AI endpoints, CORS
@@ -1263,6 +1319,7 @@ Run `start-backend.bat` (Windows) or start each service with uvicorn:
 | Fleet | `uvicorn main:app --port 8003` |
 | Master Data | `uvicorn main:app --port 8004` |
 | AI | `uvicorn main:app --port 8005` |
+| Warehouse | `uvicorn main:app --port 8006` |
 | Gateway | `uvicorn main:app --port 8000` |
 
 ### Frontend
