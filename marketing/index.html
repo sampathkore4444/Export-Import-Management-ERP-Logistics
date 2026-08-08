@@ -487,6 +487,36 @@
         <h3 data-i18n="feat.reports.title">Reports &amp; Dashboard</h3>
         <p data-i18n="feat.reports.text">Live KPI dashboard, calendar view, printable job cards and an AI-generated weekly operations report.</p>
       </div>
+      <div class="card reveal">
+        <span class="ic ic-amber">💵</span>
+        <h3 data-i18n="feat.finance.title">Finance &amp; Profitability</h3>
+        <p data-i18n="feat.finance.text">Quotations, vendor bills and payments, with per-job profit, margins and 30-day finance analytics.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic ic-cyan">🚛</span>
+        <h3 data-i18n="feat.containers.title">Container Tracking</h3>
+        <p data-i18n="feat.containers.text">A live container registry with status, event history and an in-transit filter, linked straight to your jobs.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic ic-violet">✈️</span>
+        <h3 data-i18n="feat.air.title">Air Freight (AWB)</h3>
+        <p data-i18n="feat.air.text">Full air job workflow with AWB/HAWB, carrier and flight tracking — approvals, permits, departure and arrival.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic ic-green">🏭</span>
+        <h3 data-i18n="feat.warehouse.title">Warehouse &amp; Inventory</h3>
+        <p data-i18n="feat.warehouse.text">Warehouses, stock items and IN/OUT movements with automatic low-stock and out-of-stock alerts.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic ic-rose">📄</span>
+        <h3 data-i18n="feat.exportdocs.title">Export Docs &amp; Packing Lists</h3>
+        <p data-i18n="feat.exportdocs.text">Generate commercial invoices and packing lists with HS codes, weights and marks — ready for your customers.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic ic-blue">🔐</span>
+        <h3 data-i18n="feat.plans.title">Plan-based Access</h3>
+        <p data-i18n="feat.plans.text">Starter, Business and Enterprise plans gate modules server-side, so every team pays only for what it needs.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -502,6 +532,7 @@
     <div class="flow-tabs">
       <button class="flow-tab active" data-flow="import" data-i18n="flow.tabImport">Import flow</button>
       <button class="flow-tab" data-flow="export" data-i18n="flow.tabExport">Export flow</button>
+      <button class="flow-tab" data-flow="air" data-i18n="flow.tabAir">Air flow</button>
     </div>
     <div class="flow-steps" id="flow-steps">
       <!-- injected by JS -->
@@ -527,6 +558,8 @@
           <div class="msg a" data-i18n="ai.a1">3 import jobs are past ETA and 1 export job is past ETD. The longest delay is IMP-0821 at 6 days on vessel "MSC ALTAIR".</div>
           <div class="msg q" data-i18n="ai.q2">How many trucks are available today?</div>
           <div class="msg a" data-i18n="ai.a2">8 of 12 trucks are available, with 4 assigned to active shipments.</div>
+          <div class="msg q" data-i18n="ai.q3">How many containers are in transit?</div>
+          <div class="msg a" data-i18n="ai.a3">6 containers are in transit — 3 inbound on the water and 3 on trucks heading to customer warehouses.</div>
         </div>
         <span class="ai-badge on-dark" data-i18n="ai.badge">● AI ONLINE</span>
       </div>
@@ -567,8 +600,8 @@
 <!-- ===== STATS ===== -->
 <section class="stats">
   <div class="container stats-grid">
-    <div><b>6</b><span data-i18n="stats.s1">Modular services</span></div>
-    <div><b>60+</b><span data-i18n="stats.s2">API endpoints</span></div>
+    <div><b>7</b><span data-i18n="stats.s1">Modular services</span></div>
+    <div><b>80+</b><span data-i18n="stats.s2">API endpoints</span></div>
     <div><b>24/7</b><span data-i18n="stats.s3">Self-hosted AI</span></div>
     <div><b>0</b><span data-i18n="stats.s4">External data required</span></div>
   </div>
@@ -604,10 +637,12 @@
         <ul>
           <li data-i18n="pricing.business.f1">Up to 25 users</li>
           <li data-i18n="pricing.business.f2">Everything in Starter</li>
-          <li data-i18n="pricing.business.f3">Invoicing &amp; billing</li>
-          <li data-i18n="pricing.business.f4">Documents &amp; templates</li>
-          <li data-i18n="pricing.business.f5">AI assistant, reports &amp; predictions</li>
-          <li data-i18n="pricing.business.f6">Priority support</li>
+          <li data-i18n="pricing.business.f3">Invoicing, quotations &amp; vendor bills</li>
+          <li data-i18n="pricing.business.f4">Documents, templates &amp; export docs</li>
+          <li data-i18n="pricing.business.f5">Finance analytics &amp; profitability</li>
+          <li data-i18n="pricing.business.f6">Containers, air freight &amp; warehouse</li>
+          <li data-i18n="pricing.business.f7">AI assistant, reports &amp; predictions</li>
+          <li data-i18n="pricing.business.f8">Priority support</li>
         </ul>
         <a href="#faq" class="btn btn-primary" data-i18n="pricing.btnTrial">Start free trial</a>
       </div>
@@ -692,6 +727,10 @@
         <summary data-i18n="faq.q5">Is there a trial period?</summary>
         <p data-i18n="faq.a5">Yes — every plan starts with a 14-day free trial. No credit card required, and a guided onboarding call is included.</p>
       </details>
+      <details class="faq">
+        <summary data-i18n="faq.q6">Can I track containers, air freight and warehouse stock?</summary>
+        <p data-i18n="faq.a6">Yes. Container tracking, air freight (AWB) jobs and warehouse &amp; inventory management are included on the Business and Enterprise plans.</p>
+      </details>
     </div>
   </div>
 </section>
@@ -758,6 +797,7 @@
     <button class="chat-chip" data-chat-quick="chat.quick1" data-i18n="chat.quick1">What can CargoFlow do?</button>
     <button class="chat-chip" data-chat-quick="chat.quick2" data-i18n="chat.quick2">Show me the pricing plans</button>
     <button class="chat-chip" data-chat-quick="chat.quick3" data-i18n="chat.quick3">Tell me about the AI assistant</button>
+    <button class="chat-chip" data-chat-quick="chat.quick4" data-i18n="chat.quick4">Which modules are included?</button>
   </div>
   <div class="chat-inputrow">
     <input class="chat-input" id="chat-input" data-i18n-placeholder="chat.placeholder" placeholder="Ask about features, pricing, AI..." />
@@ -782,7 +822,7 @@
       "nav.getStarted": "Get started",
       "hero.eyebrow": "Now with built-in AI assistant",
       "hero.title": "Run your entire import &amp; <em>export</em> operation on one platform",
-      "hero.lead": "CargoFlow ERP takes shipments from booking to closure — import and export — with fleet management, invoicing, documents, and an AI copilot that predicts delays, reads your shipping documents, and answers questions about your live operations.",
+      "hero.lead": "CargoFlow ERP takes shipments from booking to closure — import, export and air — with fleet management, invoicing, finance, container tracking, warehouse inventory, and an AI copilot that predicts delays, reads your shipping documents, and answers questions about your live operations.",
       "hero.demo": "Request a demo",
       "hero.exploreAI": "Explore the AI features",
       "hero.proof": "<b>Trusted by freight forwarders</b> handling thousands of containers",
@@ -815,6 +855,19 @@
       "feat.roles.text": "JWT security with admin, manager and staff roles. Approvals, rejections and destructive actions are gated by role.",
       "feat.reports.title": "Reports &amp; Dashboard",
       "feat.reports.text": "Live KPI dashboard, calendar view, printable job cards and an AI-generated weekly operations report.",
+      "feat.finance.title": "Finance &amp; Profitability",
+      "feat.finance.text": "Quotations, vendor bills and payments, with per-job profit, margins and 30-day finance analytics.",
+      "feat.containers.title": "Container Tracking",
+      "feat.containers.text": "A live container registry with status, event history and an in-transit filter, linked straight to your jobs.",
+      "feat.air.title": "Air Freight (AWB)",
+      "feat.air.text": "Full air job workflow with AWB/HAWB, carrier and flight tracking — approvals, permits, departure and arrival.",
+      "feat.warehouse.title": "Warehouse &amp; Inventory",
+      "feat.warehouse.text": "Warehouses, stock items and IN/OUT movements with automatic low-stock and out-of-stock alerts.",
+      "feat.exportdocs.title": "Export Docs &amp; Packing Lists",
+      "feat.exportdocs.text": "Generate commercial invoices and packing lists with HS codes, weights and marks — ready for your customers.",
+      "feat.plans.title": "Plan-based Access",
+      "feat.plans.text": "Starter, Business and Enterprise plans gate modules server-side, so every team pays only for what it needs.",
+      "flow.tabAir": "Air flow",
       "flow.kicker": "How it works",
       "flow.title": "A guided workflow, end to end",
       "flow.sub": "Every shipment moves through a clearly defined pipeline. Teams always know what's next — and what's blocking progress.",
@@ -829,6 +882,8 @@
       "ai.a1": "3 import jobs are past ETA and 1 export job is past ETD. The longest delay is IMP-0821 at 6 days on vessel \"MSC ALTAIR\".",
       "ai.q2": "How many trucks are available today?",
       "ai.a2": "8 of 12 trucks are available, with 4 assigned to active shipments.",
+      "ai.q3": "How many containers are in transit?",
+      "ai.a3": "6 containers are in transit — 3 inbound on the water and 3 on trucks heading to customer warehouses.",
       "ai.badge": "● AI ONLINE",
       "ai.ocrTitle": "Document OCR extraction",
       "ai.ocrText": "Upload a PDF or photo of a BL and the vision model extracts container, vessel, dates and parties — then apply it to the job in one click.",
@@ -860,10 +915,12 @@
       "pricing.business.desc": "For growing teams that need the full picture.",
       "pricing.business.f1": "Up to 25 users",
       "pricing.business.f2": "Everything in Starter",
-      "pricing.business.f3": "Invoicing &amp; billing",
-      "pricing.business.f4": "Documents &amp; templates",
-      "pricing.business.f5": "AI assistant, reports &amp; predictions",
-      "pricing.business.f6": "Priority support",
+      "pricing.business.f3": "Invoicing, quotations &amp; vendor bills",
+      "pricing.business.f4": "Documents, templates &amp; export docs",
+      "pricing.business.f5": "Finance analytics &amp; profitability",
+      "pricing.business.f6": "Containers, air freight &amp; warehouse",
+      "pricing.business.f7": "AI assistant, reports &amp; predictions",
+      "pricing.business.f8": "Priority support",
       "pricing.enterprise.name": "Enterprise",
       "pricing.enterprise.price": "Custom",
       "pricing.enterprise.desc": "For multi-branch operators with specific needs.",
@@ -893,6 +950,8 @@
       "faq.a4": "Both. Assign internal trucks, trailers and drivers directly, or mark a shipment as outsourced and link it to an approved vendor.",
       "faq.q5": "Is there a trial period?",
       "faq.a5": "Yes — every plan starts with a 14-day free trial. No credit card required, and a guided onboarding call is included.",
+      "faq.q6": "Can I track containers, air freight and warehouse stock?",
+      "faq.a6": "Yes. Container tracking, air freight (AWB) jobs and warehouse &amp; inventory management are included on the Business and Enterprise plans.",
       "cta.title": "Ready to take your operations to the next level?",
       "cta.text": "Book a live demo and see how CargoFlow turns shipping chaos into a clear, trackable pipeline.",
       "footer.tagline": "The import &amp; export management platform with a built-in AI copilot — built for freight forwarders, agents and 3PL operators.",
@@ -911,11 +970,12 @@
       "chat.subtitle": "Answers about CargoFlow ERP",
       "chat.placeholder": "Ask about features, pricing, AI...",
       "chat.send": "Send",
-      "chat.welcome": "Hi! I'm the CargoFlow ERP assistant. Ask me about the platform — features, import/export workflows, fleet management, AI capabilities, pricing plans, security, or how to get started.",
+      "chat.welcome": "Hi! I'm the CargoFlow ERP assistant. Ask me about the platform — features, import/export/air workflows, fleet management, finance, container tracking, warehouse &amp; inventory, AI capabilities, pricing plans, security, or how to get started.",
       "chat.offline": "The AI assistant is temporarily offline. Please try again in a moment.",
       "chat.quick1": "What can CargoFlow do?",
       "chat.quick2": "Show me the pricing plans",
-      "chat.quick3": "Tell me about the AI assistant"
+      "chat.quick3": "Tell me about the AI assistant",
+      "chat.quick4": "Which modules are included?"
     },
     km: {
       meta: {
@@ -931,7 +991,7 @@
       "nav.getStarted": "ចាប់ផ្តើម",
       "hero.eyebrow": "ឥឡូវនេះមានជំនួយការ AI រួមបញ្ចូល",
       "hero.title": "ដំណើរការការនាំចូល និង <em>នាំចេញ</em> ទាំងមូលរបស់អ្នកនៅលើវេទិកាតែមួយ",
-      "hero.lead": "CargoFlow ERP នាំទំនិញពីការកក់ រហូតដល់បិទបញ្ចប់ — ទាំងនាំចូល និងនាំចេញ — ជាមួយការគ្រប់គ្រងកងនាវា, វិក្កយបត្រ, ឯកសារ និងជំនួយការ AI ដែលទស្សន៍ទាយការពន្យាពេល, អានឯកសារដឹកជញ្ជូនរបស់អ្នក និងឆ្លើយសំណួរអំពីប្រតិបត្តិការផ្ទាល់របស់អ្នក។",
+      "hero.lead": "CargoFlow ERP នាំទំនិញពីការកក់ រហូតដល់បិទបញ្ចប់ — ទាំងនាំចូល, នាំចេញ និងអាកាស — ជាមួយការគ្រប់គ្រងកងនាវា, វិក្កយបត្រ, ហិរញ្ញវត្ថុ, ការតាមដានកុងតឺន័រ, ស្តុកឃ្លាំង និងជំនួយការ AI ដែលទស្សន៍ទាយការពន្យាពេល, អានឯកសារដឹកជញ្ជូនរបស់អ្នក និងឆ្លើយសំណួរអំពីប្រតិបត្តិការផ្ទាល់របស់អ្នក។",
       "hero.demo": "ស្នើសុំការបង្ហាញ",
       "hero.exploreAI": "ស្វែងយល់ពីមុខងារ AI",
       "hero.proof": "<b>ជឿទុកចិត្តដោយក្រុមហ៊ុនដឹកជញ្ជូន</b> ដែលគ្រប់គ្រងកុងតឺន័ររាប់ពាន់",
@@ -964,6 +1024,19 @@
       "feat.roles.text": "សុវត្ថិភាព JWT ជាមួយតួនាទីអ្នកគ្រប់គ្រង, អ្នកគ្រប់គ្រងផ្នែក និងបុគ្គលិក។ ការអនុម័ត, ការបដិសេធ និងសកម្មភាពបំផ្លិចបំផ្លាញត្រូវបានដាក់កំហិតតាមតួនាទី។",
       "feat.reports.title": "របាយការណ៍ និងផ្ទាំងគ្រប់គ្រង",
       "feat.reports.text": "ផ្ទាំង KPI ផ្ទាល់, ទិដ្ឋភាពប្រតិទិន, ប័ណ្ណការងារដែលអាចបោះពុម្ព និងរបាយការណ៍ប្រតិបត្តិការប្រចាំសប្តាហ៍ដែលបង្កើតដោយ AI។",
+      "feat.finance.title": "ហិរញ្ញវត្ថុ និងប្រាក់ចំណេញ",
+      "feat.finance.text": "សំណើតម្លៃ, វិក្កយបត្រអ្នកផ្គត់ផ្គង់ និងការទូទាត់ ជាមួយប្រាក់ចំណេញក្នុងមួយការងារ, រឹម និងការវិភាគហិរញ្ញវត្ថុ 30 ថ្ងៃ។",
+      "feat.containers.title": "ការតាមដានកុងតឺន័រ",
+      "feat.containers.text": "បញ្ជីកុងតឺន័រផ្ទាល់ ជាមួយស្ថានភាព, ប្រវត្តិព្រឹត្តិការណ៍ និងតម្រងកំពុងដឹកជញ្ជូន ភ្ជាប់ផ្ទាល់ទៅការងាររបស់អ្នក។",
+      "feat.air.title": "ដឹកជញ្ជូនតាមអាកាស (AWB)",
+      "feat.air.text": "លំហូរការងារអាកាសពេញលេញ ជាមួយ AWB/HAWB, ក្រុមហ៊ុនអាកាសចរណ៍ និងការតាមដានជើងហោះហើរ — ការអនុម័ត, លិខិតអនុញ្ញាត, ការចេញ និងការមកដល់។",
+      "feat.warehouse.title": "ឃ្លាំង និងស្តុក",
+      "feat.warehouse.text": "ឃ្លាំង, ទំនិញស្តុក និងចលនា IN/OUT ជាមួយការជូនដំណឹងស្តុកទាប និងអស់ស្តុកដោយស្វ័យប្រវត្តិ។",
+      "feat.exportdocs.title": "ឯកសារនាំចេញ និងបញ្ជីការវេចខ្ចប់",
+      "feat.exportdocs.text": "បង្កើតវិក្កយបត្រពាណិជ្ជកម្ម និងបញ្ជីការវេចខ្ចប់ ជាមួយលេខ HS, ទម្ងន់ និងសញ្ញាសម្គាល់ — ត្រៀមសម្រាប់អតិថិជនរបស់អ្នក។",
+      "feat.plans.title": "ការចូលប្រើតាមផែនការ",
+      "feat.plans.text": "ផែនការ Starter, Business និង Enterprise កំណត់ម៉ូឌុលនៅផ្នែកម៉ាស៊ីនមេ ដូច្នេះក្រុមនីមួយៗបង់តែអ្វីដែលខ្លួនត្រូវការ។",
+      "flow.tabAir": "លំហូរអាកាស",
       "flow.kicker": "របៀបដំណើរការ",
       "flow.title": "លំហូរការងារណែនាំ ពីដើមដល់ចប់",
       "flow.sub": "រាល់ការដឹកជញ្ជូនឆ្លងកាត់លំហូរច្បាស់លាស់។ ក្រុមការងារតែងតែដឹងពីជំហានបន្ទាប់ — និងអ្វីដែលកំពុងរារាំងវឌ្ឍនភាព។",
@@ -978,6 +1051,8 @@
       "ai.a1": "ការងារនាំចូល 3 លើស ETA និងការងារនាំចេញ 1 លើស ETD។ ការពន្យាពេលយូរបំផុតគឺ IMP-0821 រយៈពេល 6 ថ្ងៃ នៅលើកប៉ាល់ \"MSC ALTAIR\"។",
       "ai.q2": "តើរថយន្តប៉ុន្មានគ្រឿងអាចប្រើបាននៅថ្ងៃនេះ?",
       "ai.a2": "រថយន្ត 8 ក្នុងចំណោម 12 អាចប្រើបាន ដោយ 4 ត្រូវបានកំណត់ទៅការដឹកជញ្ជូនសកម្ម។",
+      "ai.q3": "តើកុងតឺន័រប៉ុន្មានកំពុងដឹកជញ្ជូន?",
+      "ai.a3": "កុងតឺន័រ 6 កំពុងដឹកជញ្ជូន — 3 នាំចូលលើសមុទ្រ និង 3 លើរថយន្តទៅកាន់ឃ្លាំងអតិថិជន។",
       "ai.badge": "● AI ដំណើរការ",
       "ai.ocrTitle": "ការទាញយកឯកសារ OCR",
       "ai.ocrText": "ផ្ទុក PDF ឬរូបថត BL ហើយគំរូចក្ខុវិស័យទាញយកកុងតឺន័រ, កប៉ាល់, កាលបរិច្ឆេទ និងភាគី — រួចអនុវត្តទៅការងារក្នុងការចុចម្តង។",
@@ -1009,10 +1084,12 @@
       "pricing.business.desc": "សម្រាប់ក្រុមកំពុងរីកចម្រើនដែលត្រូវការរូបភាពពេញលេញ។",
       "pricing.business.f1": "អ្នកប្រើរហូតដល់ 25 នាក់",
       "pricing.business.f2": "អ្វីៗទាំងអស់ក្នុងផែនការចាប់ផ្តើម",
-      "pricing.business.f3": "វិក្កយបត្រ និងការចេញវិក្កយបត្រ",
-      "pricing.business.f4": "ឯកសារ និងគំរូ",
-      "pricing.business.f5": "ជំនួយការ AI, របាយការណ៍ និងការទស្សន៍ទាយ",
-      "pricing.business.f6": "ការគាំទ្រអាទិភាព",
+      "pricing.business.f3": "វិក្កយបត្រ, សំណើតម្លៃ និងវិក្កយបត្រអ្នកផ្គត់ផ្គង់",
+      "pricing.business.f4": "ឯកសារ, គំរូ និងឯកសារនាំចេញ",
+      "pricing.business.f5": "ការវិភាគហិរញ្ញវត្ថុ និងប្រាក់ចំណេញ",
+      "pricing.business.f6": "កុងតឺន័រ, ដឹកតាមអាកាស និងឃ្លាំង",
+      "pricing.business.f7": "ជំនួយការ AI, របាយការណ៍ និងការទស្សន៍ទាយ",
+      "pricing.business.f8": "ការគាំទ្រអាទិភាព",
       "pricing.enterprise.name": "សហគ្រាស",
       "pricing.enterprise.price": "ផ្ទាល់ខ្លួន",
       "pricing.enterprise.desc": "សម្រាប់ប្រតិបត្តិករពហុសាខាដែលមានតម្រូវការជាក់លាក់។",
@@ -1042,6 +1119,8 @@
       "faq.a4": "ទាំងពីរ។ កំណត់រថយន្ត, រ៉ឺម៉ក និងអ្នកបើកបរផ្ទាល់ ឬសម្គាល់ការដឹកជញ្ជូនថាជួលក្រៅ ហើយភ្ជាប់ទៅអ្នកផ្គត់ផ្គង់ដែលបានអនុម័ត។",
       "faq.q5": "តើមានរយៈពេលសាកល្បងដែរឬទេ?",
       "faq.a5": "បាទ — គ្រប់ផែនការចាប់ផ្តើមជាមួយការសាកល្បងឥតគិតថ្លៃ 14 ថ្ងៃ។ មិនតម្រូវឱ្យមានកាតឥណទាន ហើយរួមបញ្ចូលការហៅណែនាំការប្រើប្រាស់។",
+      "faq.q6": "តើខ្ញុំអាចតាមដានកុងតឺន័រ, ដឹកតាមអាកាស និងស្តុកឃ្លាំងបានទេ?",
+      "faq.a6": "បាទ។ ការតាមដានកុងតឺន័រ, ការងារដឹកតាមអាកាស (AWB) និងការគ្រប់គ្រងឃ្លាំង និងស្តុក រួមបញ្ចូលក្នុងផែនការ Business និង Enterprise។",
       "cta.title": "ត្រៀមខ្លួនលើកកម្ពស់ប្រតិបត្តិការរបស់អ្នកហើយឬនៅ?",
       "cta.text": "កក់ការបង្ហាញផ្ទាល់ ហើយមើលពីរបៀបដែល CargoFlow ប្រែក្លាយភាពច្របូកច្របល់នៃការដឹកជញ្ជូន ទៅជាលំហូរច្បាស់លាស់អាចតាមដានបាន។",
       "footer.tagline": "វេទិកាគ្រប់គ្រងការនាំចូល និងនាំចេញ ជាមួយជំនួយការ AI ដែលភ្ជាប់មក — បង្កើតសម្រាប់ក្រុមហ៊ុនដឹកជញ្ជូន, ភ្នាក់ងារ និងប្រតិបត្តិករ 3PL។",
@@ -1060,11 +1139,12 @@
       "chat.subtitle": "ចម្លើយអំពី CargoFlow ERP",
       "chat.placeholder": "សួរអំពីមុខងារ, តម្លៃ, AI...",
       "chat.send": "ផ្ញើ",
-      "chat.welcome": "ជំរាបសួរ! ខ្ញុំជាជំនួយការ CargoFlow ERP។ សួរខ្ញុំអំពីវេទិកា — មុខងារ, លំហូរនាំចូល/នាំចេញ, ការគ្រប់គ្រងកងនាវា, សមត្ថភាព AI, ផែនការតម្លៃ, សុវត្ថិភាព ឬរបៀបចាប់ផ្តើម។",
+      "chat.welcome": "ជំរាបសួរ! ខ្ញុំជាជំនួយការ CargoFlow ERP។ សួរខ្ញុំអំពីវេទិកា — មុខងារ, លំហូរនាំចូល/នាំចេញ/អាកាស, ការគ្រប់គ្រងកងនាវា, ហិរញ្ញវត្ថុ, ការតាមដានកុងតឺន័រ, ឃ្លាំង និងស្តុក, សមត្ថភាព AI, ផែនការតម្លៃ, សុវត្ថិភាព ឬរបៀបចាប់ផ្តើម។",
       "chat.offline": "ជំនួយការ AI កំពុងមិនដំណើរការជាបណ្តោះអាសន្ន។ សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ។",
       "chat.quick1": "តើ CargoFlow អាចធ្វើអ្វីបាន?",
       "chat.quick2": "បង្ហាញផែនការតម្លៃ",
-      "chat.quick3": "ប្រាប់ខ្ញុំអំពីជំនួយការ AI"
+      "chat.quick3": "ប្រាប់ខ្ញុំអំពីជំនួយការ AI",
+      "chat.quick4": "តើម៉ូឌុលណាខ្លះត្រូវបានរួមបញ្ចូល?"
     },
     zh: {
       meta: {
@@ -1080,7 +1160,7 @@
       "nav.getStarted": "立即开始",
       "hero.eyebrow": "现在内置AI助手",
       "hero.title": "在一个平台上运行您的全部 <em>进出口</em> 业务",
-      "hero.lead": "CargoFlow ERP 将货物从订舱到结案全程管理——包括进口和出口——涵盖车队管理、发票、文件以及能预测延误、读取您运输单据并回答您实时运营问题的AI副驾驶。",
+      "hero.lead": "CargoFlow ERP 将货物从订舱到结案全程管理——包括进口、出口和空运——涵盖车队管理、发票、财务、集装箱跟踪、仓库库存，以及能预测延误、读取您运输单据并回答您实时运营问题的AI副驾驶。",
       "hero.demo": "申请演示",
       "hero.exploreAI": "探索AI功能",
       "hero.proof": "<b>深受货运代理信赖</b>，处理数千个集装箱",
@@ -1113,6 +1193,19 @@
       "feat.roles.text": "JWT安全，包含管理员、经理和员工角色。审批、驳回和删除操作按角色限制。",
       "feat.reports.title": "报表与仪表盘",
       "feat.reports.text": "实时KPI仪表盘、日历视图、可打印订单卡片和AI生成的每周运营报告。",
+      "feat.finance.title": "财务与盈利分析",
+      "feat.finance.text": "报价单、供应商账单和付款，支持按订单盈利、利润率及30天财务分析。",
+      "feat.containers.title": "集装箱跟踪",
+      "feat.containers.text": "实时集装箱台账，包含状态、事件历史和运输中筛选，直接关联您的订单。",
+      "feat.air.title": "空运 (AWB)",
+      "feat.air.text": "完整的空运订单流程，涵盖AWB/HAWB、承运人和航班跟踪——审批、许可、离港和到港。",
+      "feat.warehouse.title": "仓库与库存",
+      "feat.warehouse.text": "仓库、库存商品和IN/OUT出入库，自动提示低库存和缺货。",
+      "feat.exportdocs.title": "出口单据与装箱单",
+      "feat.exportdocs.text": "生成商业发票和装箱单，包含HS编码、重量和唛头——随时可交付客户。",
+      "feat.plans.title": "按方案授权",
+      "feat.plans.text": "入门版、商业版和企业版在服务端控制模块权限，每个团队只为所需功能付费。",
+      "flow.tabAir": "空运流程",
       "flow.kicker": "运作方式",
       "flow.title": "端到端的引导式工作流程",
       "flow.sub": "每批货物都经过清晰定义的流程管道。团队始终知道下一步——以及什么在阻碍进展。",
@@ -1127,6 +1220,8 @@
       "ai.a1": "3个进口订单已过ETA，1个出口订单已过ETD。最长延误为IMP-0821，在\"MSC ALTAIR\"号船上延误6天。",
       "ai.q2": "今天有多少辆卡车可用？",
       "ai.a2": "12辆卡车中有8辆可用，其中4辆已分配给进行中的货物。",
+      "ai.q3": "有多少个集装箱在途？",
+      "ai.a3": "6个集装箱在途——3个进口正在海上，3个正在运往客户仓库的卡车上。",
       "ai.badge": "● AI在线",
       "ai.ocrTitle": "文档OCR提取",
       "ai.ocrText": "上传提单的PDF或照片，视觉模型即可提取集装箱、船舶、日期和各方信息——一键应用到订单。",
@@ -1158,10 +1253,12 @@
       "pricing.business.desc": "适合需要全面视图的成长型团队。",
       "pricing.business.f1": "最多25个用户",
       "pricing.business.f2": "入门版全部功能",
-      "pricing.business.f3": "发票与计费",
-      "pricing.business.f4": "文件与模板",
-      "pricing.business.f5": "AI助手、报表与预测",
-      "pricing.business.f6": "优先支持",
+      "pricing.business.f3": "发票、报价单与供应商账单",
+      "pricing.business.f4": "文件、模板与出口单据",
+      "pricing.business.f5": "财务分析与盈利能力",
+      "pricing.business.f6": "集装箱、空运与仓库",
+      "pricing.business.f7": "AI助手、报表与预测",
+      "pricing.business.f8": "优先支持",
       "pricing.enterprise.name": "企业版",
       "pricing.enterprise.price": "定制",
       "pricing.enterprise.desc": "适合有特定需求的多分支运营商。",
@@ -1191,6 +1288,8 @@
       "faq.a4": "都可以。直接分配内部卡车、拖车和司机，或将货物标记为外包并关联到已批准的供应商。",
       "faq.q5": "有试用期吗？",
       "faq.a5": "是的——每个方案都从14天免费试用开始。无需信用卡，并包含引导式入门指导通话。",
+      "faq.q6": "我可以跟踪集装箱、空运和仓库库存吗？",
+      "faq.a6": "可以。集装箱跟踪、空运(AWB)订单以及仓库与库存管理包含在商业版和企业版方案中。",
       "cta.title": "准备好将您的运营提升到新水平了吗？",
       "cta.text": "预约现场演示，看看CargoFlow如何将运输混乱转变为清晰可追踪的流程管道。",
       "footer.tagline": "内置AI副驾驶的进出口管理平台——专为货运代理、代理和3PL运营商打造。",
@@ -1209,11 +1308,12 @@
       "chat.subtitle": "关于 CargoFlow ERP 的解答",
       "chat.placeholder": "询问功能、定价、AI...",
       "chat.send": "发送",
-      "chat.welcome": "您好！我是 CargoFlow ERP 助手。请向我询问平台相关问题——功能、进出口流程、车队管理、AI能力、定价方案、安全性或如何开始使用。",
+      "chat.welcome": "您好！我是 CargoFlow ERP 助手。请向我询问平台相关问题——功能、进出口/空运流程、车队管理、财务、集装箱跟踪、仓库与库存、AI能力、定价方案、安全性或如何开始使用。",
       "chat.offline": "AI 助手暂时离线，请稍后再试。",
       "chat.quick1": "CargoFlow 能做什么？",
       "chat.quick2": "查看定价方案",
-      "chat.quick3": "介绍 AI 助手"
+      "chat.quick3": "介绍 AI 助手",
+      "chat.quick4": "包含哪些模块？"
     }
   };
 
@@ -1239,6 +1339,14 @@
         ["Gate-in & EIR", "Record port gate-in with EIR number"],
         ["Vessel departure", "Record ATD of the outbound vessel"],
         ["Clearance & close", "Export clearance then close the job"]
+      ],
+      air: [
+        ["Air booking", "AWB/HAWB, carrier, flight and route captured"],
+        ["Approval & team", "Approve the job and assign operations team"],
+        ["License & permits", "Apply air export license and customs permit"],
+        ["Flight departure", "Record ATD of the outbound flight"],
+        ["Flight arrival", "Record ATA at destination"],
+        ["Close", "Close the air job and finalize billing"]
       ]
     },
     km: {
@@ -1261,6 +1369,14 @@
         ["ការចូលកំពង់ផែ &amp; EIR", "កត់ត្រាការចូលកំពង់ផែជាមួយលេខ EIR"],
         ["ការចេញរបស់កប៉ាល់", "កត់ត្រា ATD នៃកប៉ាល់នាំចេញ"],
         ["ការបោសសំអាត និងបិទ", "បោសសំអាតនាំចេញ រួចបិទការងារ"]
+      ],
+      air: [
+        ["ការកក់តាមផ្លូវអាកាស", "បានកត់ត្រា AWB/HAWB, ក្រុមហ៊ុនអាកាសចរណ៍, ជើងហោះហើរ និងផ្លូវ"],
+        ["ការអនុម័ត និងក្រុម", "អនុម័តការងារ និងកំណត់ក្រុមប្រតិបត្តិការ"],
+        ["អាជ្ញាប័ណ្ណ និងលិខិតអនុញ្ញាត", "ដាក់ពាក្យសុំអាជ្ញាប័ណ្ណនាំចេញតាមអាកាស និងលិខិតអនុញ្ញាតគយ"],
+        ["ការចេញដំណើររបស់ជើងហោះហើរ", "កត់ត្រា ATD នៃជើងហោះហើរចេញ"],
+        ["ជើងហោះហើរមកដល់", "កត់ត្រា ATA នៅទិសដៅ"],
+        ["បិទ", "បិទការងារអាកាស និងបញ្ចប់វិក្កយបត្រ"]
       ]
     },
     zh: {
@@ -1283,6 +1399,14 @@
         ["进闸与EIR", "记录港口进闸及EIR编号"],
         ["船舶离港", "记录出口船舶实际离港时间"],
         ["清关与结案", "出口清关后关闭订单"]
+      ],
+      air: [
+        ["空运订舱", "已记录AWB/HAWB、承运人、航班和航线"],
+        ["审批与团队", "审批订单并指派运营团队"],
+        ["许可证与许可", "申请空运出口许可证和海关许可"],
+        ["航班离港", "记录出港航班实际离港时间"],
+        ["航班到港", "在目的地记录实际到港时间"],
+        ["结案", "关闭空运订单并完成计费"]
       ]
     }
   };
