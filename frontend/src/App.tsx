@@ -1510,6 +1510,8 @@ function JobDetail() {
         <span className={`badge ${getStatusBadge(job.status)}`}>{job.status.replace(/_/g, ' ')}</span>
       </div>
 
+      <AIAssistPanel jobId={jobId || ''} jobType="import" onAction={(a: string) => updateJobStatus(a)} onUpdated={loadData} />
+
       <div className="card mb-4">
         <div className="card-header">
           <span className="card-title">Workflow Progress</span>
@@ -2335,6 +2337,8 @@ function ExportJobDetail() {
         </div>
         <span className={`badge ${getStatusBadge(job.status)}`}>{job.status.replace(/_/g, ' ')}</span>
       </div>
+
+      <AIAssistPanel jobId={jobId || ''} jobType="export" onAction={(a: string) => updateJobStatus(a)} onUpdated={loadData} />
 
       <div className="card mb-4">
         <div className="card-header">
@@ -4354,6 +4358,12 @@ function Layout({ children }: { children: React.ReactNode }) {
               Templates
             </Link>
           </li>
+          <li className="nav-item">
+            <Link to="/ai-reports" className="nav-link">
+              <span className="nav-icon">&#129302;</span>
+              AI Reports
+            </Link>
+          </li>
           <li className="nav-section">Operations</li>
           <li className="nav-item">
             <Link to="/jobs" className="nav-link">
@@ -4475,6 +4485,295 @@ function Layout({ children }: { children: React.ReactNode }) {
         <Notifications notifications={notifications} onDismiss={dismissNotification} />
         {children}
       </main>
+      <AIAssistant />
+    </div>
+  )
+}
+
+function AIAssistant() {
+  const [open, setOpen] = useState(false)
+  const [messages, setMessages] = useState<any[]>([])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [aiStatus, setAiStatus] = useState<any>(null)
+
+  useEffect(() => {
+    axios.get(`${API_BASE}/ai/status`).then(r => setAiStatus(r.data)).catch(() => setAiStatus({ ollama_available: false }))
+  }, [])
+
+  const chips = [
+    'How many jobs are delayed?',
+    'Fleet availability summary',
+    'Weekly performance snapshot'
+  ]
+
+  const send = async (text?: string) => {
+    const message = (text ?? input).trim()
+    if (!message || loading) return
+    const history = messages.map(m => ({ role: m.role, content: m.content }))
+    setMessages(prev => [...prev, { role: 'user', content: message }])
+    setInput('')
+    setLoading(true)
+    try {
+      const res = await axios.post(`${API_BASE}/ai/chat`, { message, history })
+      setMessages(prev => [...prev, { role: 'assistant', content: res.data.answer, mode: res.data.mode }])
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, the AI assistant is unavailable right now.', mode: 'error' }])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const online = aiStatus?.ollama_available
+
+  return (
+    <>
+      {open && (
+        <div className="ai-panel">
+          <div className="ai-panel-header">
+            <div className="ai-avatar">&#129302;</div>
+            <div>
+              <div className="ai-title">CargoFlow AI</div>
+              <div className="ai-sub">{online ? 'Online · Ollama' : 'Fallback mode · Ollama offline'}</div>
+            </div>
+            <button className="ai-close" onClick={() => setOpen(false)}>&#10005;</button>
+          </div>
+          <div className="ai-messages">
+            {messages.length === 0 && (
+              <div className="ai-msg ai-msg-bot">
+                Hi! I'm CargoFlow AI. Ask me about your import/export jobs, fleet availability, invoices or weekly operations.
+              </div>
+            )}
+            {messages.map((m, i) => (
+              <div key={i} className={`ai-msg ${m.role === 'user' ? 'ai-msg-user' : `ai-msg-bot ${m.mode === 'fallback' ? 'ai-msg-fallback' : m.mode === 'error' ? 'ai-msg-error' : ''}`}`}>
+                {m.role === 'assistant' && m.mode === 'fallback' && <span className="ai-mode-tag">offline</span>}
+                {m.content}
+              </div>
+            ))}
+            {loading && <div className="ai-msg ai-msg-bot">Thinking...</div>}
+          </div>
+          {messages.length === 0 && (
+            <div className="ai-chips">
+              {chips.map(c => (
+                <button key={c} className="ai-chip" onClick={() => send(c)}>{c}</button>
+              ))}
+            </div>
+          )}
+          <div className="ai-input-row">
+            <input
+              className="form-input"
+              placeholder="Ask anything about your operations..."
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && send()}
+            />
+            <button onClick={() => send()}>&#10148;</button>
+          </div>
+        </div>
+      )}
+      <button
+        className="ai-launcher"
+        onClick={() => setOpen(o => !o)}
+        title={online ? 'CargoFlow AI' : 'CargoFlow AI (offline mode)'}
+      >
+        &#129302;
+        <span className={`ai-dot ${online ? '' : 'offline'}`} />
+      </button>
+    </>
+  )
+}
+
+function AIAssistPanel({ jobId, jobType, onAction, onUpdated }: { jobId: string; jobType: 'import' | 'export'; onAction: (action: string) => void; onUpdated: () => void }) {
+  const [assist, setAssist] = useState<any>(null)
+  const [prediction, setPrediction] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [ocrBusy, setOcrBusy] = useState(false)
+  const [ocrResult, setOcrResult] = useState<any>(null)
+  const [applying, setApplying] = useState(false)
+
+  const load = () => {
+    setLoading(true)
+    Promise.all([
+      axios.post(`${API_BASE}/ai/assist/job`, { job_type: jobType, job_id: jobId }).catch(() => null),
+      axios.post(`${API_BASE}/ai/predict-eta`, { job_type: jobType, job_id: jobId }).catch(() => null)
+    ]).then(([a, p]) => {
+      setAssist(a?.data || null)
+      setPrediction(p?.data || null)
+    }).finally(() => setLoading(false))
+  }
+
+  useEffect(() => { load() }, [jobId, jobType])
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setOcrBusy(true)
+    setOcrResult(null)
+    const form = new FormData()
+    form.append('file', file)
+    try {
+      const res = await axios.post(`${API_BASE}/ai/extract-document`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+      setOcrResult(res.data.extracted)
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Document extraction failed')
+    } finally {
+      setOcrBusy(false)
+      e.target.value = ''
+    }
+  }
+
+  const applyOcr = async () => {
+    if (!ocrResult) return
+    const payload: any = {}
+    if (jobType === 'import') {
+      if (ocrResult.container_number) payload.container_number = ocrResult.container_number
+      if (ocrResult.vessel_name) payload.vessel_name = ocrResult.vessel_name
+      if (ocrResult.bl_number) payload.bl_number = ocrResult.bl_number
+      if (ocrResult.consignee) payload.consignee = ocrResult.consignee
+      if (ocrResult.cargo_description) payload.cargo_description = ocrResult.cargo_description
+      if (ocrResult.quantity) payload.quantity = ocrResult.quantity
+      if (ocrResult.etd) payload.eta = ocrResult.etd
+    } else {
+      if (ocrResult.container_number) payload.container_number = ocrResult.container_number
+      if (ocrResult.vessel_name) payload.vessel_name = ocrResult.vessel_name
+      if (ocrResult.bl_number) payload.bl_number = ocrResult.bl_number
+      if (ocrResult.shipper) payload.shipper = ocrResult.shipper
+      if (ocrResult.consignee) payload.consignee = ocrResult.consignee
+      if (ocrResult.cargo_description) payload.cargo_description = ocrResult.cargo_description
+      if (ocrResult.quantity) payload.quantity = ocrResult.quantity
+      if (ocrResult.etd) payload.etd = ocrResult.etd
+    }
+    if (Object.keys(payload).length === 0) {
+      alert('No extractable fields found to apply.')
+      return
+    }
+    setApplying(true)
+    try {
+      const base = jobType === 'export' ? `${API_BASE}/exports/${jobId}` : `${API_BASE}/jobs/${jobId}`
+      await axios.put(base, payload)
+      onUpdated()
+      alert('Extracted fields applied to the job.')
+    } catch {
+      alert('Failed to apply extracted fields.')
+    } finally {
+      setApplying(false)
+    }
+  }
+
+  const SKIP_ACTIONS = ['truck', 'edit', 'review', 'assign-team']
+
+  return (
+    <div className="ai-assist">
+      <h3>&#129302; AI Assist</h3>
+      {loading && <div className="text-muted text-sm">Analyzing job...</div>}
+      {!loading && (
+        <>
+          {prediction && (
+            <div className="ai-metrics">
+              <div className="ai-metric">
+                <div className="ai-metric-label">Predicted {jobType === 'export' ? 'departure' : 'arrival'}</div>
+                <div className="ai-metric-value">{prediction.predicted_arrival || '—'}</div>
+              </div>
+              <div className="ai-metric">
+                <div className="ai-metric-label">Delay risk</div>
+                <div className="ai-metric-value"><span className={`risk-${prediction.delay_risk || 'low'}`}>{(prediction.delay_risk || 'unknown').toUpperCase()}</span></div>
+              </div>
+              <div className="ai-metric">
+                <div className="ai-metric-label">Confidence</div>
+                <div className="ai-metric-value">{prediction.confidence || '—'}</div>
+              </div>
+            </div>
+          )}
+          {assist?.suggestions?.length > 0 && (
+            <div>
+              {assist.suggestions.map((s: any, i: number) => (
+                <div key={i} className={`ai-suggestion s-${s.type}`}>
+                  <span className="ai-dot" />
+                  <span>{s.message}</span>
+                  {s.action && !SKIP_ACTIONS.includes(s.action) && (
+                    <button onClick={() => { onAction(s.action); setTimeout(load, 800) }}>{s.action.replace(/-/g, ' ')}</button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {assist?.ai_tip && <div className="ai-tip">Tip: {assist.ai_tip}</div>}
+          <div className="ai-ocr-row">
+            <input type="file" accept=".pdf,.png,.jpg,.jpeg,.bmp,.webp" onChange={handleFile} disabled={ocrBusy} />
+            {ocrBusy && <span className="text-muted text-sm">Extracting with vision model...</span>}
+          </div>
+          {ocrResult && (
+            <>
+              <div className="ai-ocr-fields">
+                {Object.entries(ocrResult).filter(([k, v]) => k !== '_raw' && v).map(([k, v]) => (
+                  <span key={k} className="ai-ocr-field">{k}: <b>{String(v)}</b></span>
+                ))}
+              </div>
+              <button className="btn btn-primary btn-sm" style={{ marginTop: '10px' }} onClick={applyOcr} disabled={applying}>
+                {applying ? 'Applying...' : 'Apply to job'}
+              </button>
+            </>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+function AIReports() {
+  const [report, setReport] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  const load = () => {
+    setLoading(true)
+    axios.get(`${API_BASE}/ai/reports/weekly`).then(r => setReport(r.data)).catch(() => alert('Failed to load AI weekly report')).finally(() => setLoading(false))
+  }
+
+  useEffect(() => { load() }, [])
+
+  return (
+    <div>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div>
+          <h2 className="page-title">&#129302; AI Weekly Report</h2>
+          <p className="page-subtitle">Auto-generated operations summary powered by CargoFlow AI</p>
+        </div>
+        <button className="btn btn-primary" onClick={load}>Regenerate</button>
+      </div>
+      {loading && <div className="text-muted">Generating report...</div>}
+      {!loading && report && (
+        <>
+          {report.mode === 'fallback' && <div className="ai-report-meta">Offline mode — Ollama not detected; narrative generated from live stats.</div>}
+          <div className="ai-report-meta">Generated {report.generated}</div>
+          <div className="grid grid-4">
+            <div className="stat-card">
+              <div className="stat-label">New Import Jobs</div>
+              <div className="stat-value">{report.stats.new_import_jobs}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-label">New Export Jobs</div>
+              <div className="stat-value">{report.stats.new_export_jobs}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-label">Revenue (7d)</div>
+              <div className="stat-value">${(report.stats.revenue_7d || 0).toLocaleString()}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-label">Delayed</div>
+              <div className="stat-value">{report.stats.delayed_imports} / {report.stats.delayed_exports}</div>
+            </div>
+          </div>
+          <div className="ai-report-narrative">{report.narrative}</div>
+          <div className="card" style={{ padding: '16px' }}>
+            <h3 style={{ marginTop: 0 }}>Status distribution</h3>
+            <div className="flex" style={{ flexWrap: 'wrap', gap: '8px' }}>
+              {Object.entries(report.stats.top_import_statuses || {}).map(([s, n]) => (
+                <span key={s} className="badge badge-in-progress">{s}: {String(n)}</span>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -4509,6 +4808,7 @@ function App() {
         <Route path="/settings" element={<Layout><CompanySettings /></Layout>} />
         <Route path="/calendar" element={<Layout><CalendarView /></Layout>} />
         <Route path="/templates" element={<Layout><JobTemplates /></Layout>} />
+        <Route path="/ai-reports" element={<Layout><AIReports /></Layout>} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>

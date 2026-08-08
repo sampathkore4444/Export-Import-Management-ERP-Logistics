@@ -22,6 +22,11 @@ start "Master Data Service" cmd /k "cd /d %~dp0master-data-service && uvicorn ma
 
 timeout /t 2 /nobreak >nul
 
+echo Starting AI Service on port 8005...
+start "AI Service" cmd /k "cd /d %~dp0ai-service && uvicorn main:app --port 8005 --reload"
+
+timeout /t 2 /nobreak >nul
+
 echo Starting API Gateway on port 8000...
 start "API Gateway" cmd /k "cd /d %~dp0api-gateway && uvicorn main:app --port 8000 --reload"
 
@@ -32,6 +37,7 @@ echo Auth Service:     http://localhost:8001
 echo Import Service:  http://localhost:8002
 echo Fleet Service:    http://localhost:8003
 echo Master Data:     http://localhost:8004
+echo AI Service:      http://localhost:8005
 echo API Gateway:     http://localhost:8000
 echo.
 echo To register a user, use curl:

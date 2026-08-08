@@ -17,6 +17,7 @@ AUTH_SERVICE = "http://localhost:8001"
 IMPORT_SERVICE = "http://localhost:8002"
 FLEET_SERVICE = "http://localhost:8003"
 MASTER_DATA_SERVICE = "http://localhost:8004"
+AI_SERVICE = "http://localhost:8005"
 
 async def proxy(request: Request, service_url: str):
     path = request.url.path
@@ -86,6 +87,10 @@ async def fleet_proxy(request: Request, path: str = ""):
 @app.api_route("/api/settings", methods=["GET", "PUT"])
 async def master_data_proxy(request: Request, path: str = ""):
     return await proxy(request, MASTER_DATA_SERVICE)
+
+@app.api_route("/api/ai/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def ai_proxy(request: Request, path: str = ""):
+    return await proxy(request, AI_SERVICE)
 
 @app.get("/health")
 def health_check():
